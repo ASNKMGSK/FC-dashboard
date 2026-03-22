@@ -160,7 +160,7 @@ html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { pos
 <div class="hero-section" id="hero">
   <h1 class="hero-title">FMCS 사상압연 스마트팩토리 AI 플랫폼</h1>
   <p class="hero-subtitle">제조 현장을 위한 ML 기반 AI 운영 시스템</p>
-  <p class="hero-desc">H형강 사상압연 공정의 <strong>3개 라인 x 9개 스탠드</strong>를 실시간으로 모니터링, 제어, 분석하는 풀스택 AI 플랫폼.<br>10종 ML 모델과 Canvas 60fps 실시간 차트로 설비 진단, 품질 SPC, 공정 최적화, 예지보전을 수행합니다.</p>
+  <p class="hero-desc">H형강 사상압연 공정의 <strong>3개 라인 x 9개 스탠드</strong>를 실시간으로 모니터링, 제어, 분석하는 풀스택 AI 플랫폼.<br>7종 ML 모델과 Canvas 60fps 실시간 차트로 설비 진단, 품질 SPC, 공정 최적화, 예지보전을 수행합니다.</p>
   <div class="hero-divider"></div>
   <p class="badge-container">
     <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14">
@@ -196,7 +196,7 @@ html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { pos
 <h2>At a Glance</h2>
 <div class="stats-grid">
   <div class="stat-card"><div class="stat-icon">&#9881;</div><div class="stat-label">생산라인</div><div class="stat-value">3 x 9</div><div class="stat-desc">3개 라인 x 9개 스탠드</div></div>
-  <div class="stat-card"><div class="stat-icon">&#129302;</div><div class="stat-label">ML 모델</div><div class="stat-value">10</div><div class="stat-desc">분류/회귀/이상탐지/클러스터링</div></div>
+  <div class="stat-card"><div class="stat-icon">&#129302;</div><div class="stat-label">ML 모델</div><div class="stat-value">7</div><div class="stat-desc">분류/회귀/이상탐지/클러스터링</div></div>
   <div class="stat-card"><div class="stat-icon">&#128202;</div><div class="stat-label">운영 패널</div><div class="stat-value">6</div><div class="stat-desc">대시보드/제어/분석/ML/사용자/로그</div></div>
   <div class="stat-card"><div class="stat-icon">&#128295;</div><div class="stat-label">에이전트 도구</div><div class="stat-value">30+</div><div class="stat-desc">Dual-Layer 패턴</div></div>
   <div class="stat-card"><div class="stat-icon">&#128200;</div><div class="stat-label">실시간 차트</div><div class="stat-value">60fps</div><div class="stat-desc">Canvas 2D + RAF 통합 루프</div></div>
@@ -243,12 +243,13 @@ html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { pos
 </ul>
 
 <h3 id="feat-ai-mlops">3. AI 예측 / MLOps (ModelsPanel)</h3>
-<p>10종 ML 모델의 전체 라이프사이클을 통합 UI에서 관리합니다.</p>
+<p>7종 ML 모델의 전체 라이프사이클을 통합 UI에서 관리합니다.</p>
 <ul>
-  <li><strong>MLflow 모델 레지스트리</strong>: 모델 버전/스테이지 관리 (Production/Archived)</li>
-  <li><strong>모델 드리프트 모니터링</strong>: RMSE 30일 추이 + Feature PSI (10개 피처, 임계값 0.003)</li>
+  <li><strong>MLflow 모델 레지스트리</strong>: 모델별 버전 관리 UI (Production/Archived), 배포 이력 추적</li>
+  <li><strong>Optuna 하이퍼파라미터 자동 튜닝</strong>: 베이지안 최적화로 재학습 시 최적 파라미터 자동 탐색</li>
+  <li><strong>AutoGluon 앙상블</strong>: 다중 알고리즘 자동 앙상블, 5~10% 성능 개선</li>
+  <li><strong>모델 드리프트 모니터링</strong>: RMSE 30일 추이 + Feature PSI (임계값 0.003)</li>
   <li><strong>원클릭 재학습</strong>: SSE 스트림 4단계 진행률 (전처리 → 학습 → 평가 → 배포)</li>
-  <li><strong>앙상블 가중치</strong>: XGBoost(0.4) + LightGBM(0.35) + RF(0.25), 5~10% 성능 개선</li>
   <li><strong>A/B 테스트</strong>: RMSE, R2, MAE, 추론시간(ms) 비교 → 자동 추천</li>
 </ul>
 
@@ -280,7 +281,7 @@ graph LR
     end
     subgraph Backend["FastAPI :8001"]
         C["7 Domain Routers"]
-        E["ML Engine<br/>10 Models"]
+        E["ML Engine<br/>7 Models"]
         G["StandSimulator<br/>3 Lines x 9 Stands"]
     end
     subgraph Data["Data Layer"]
@@ -343,23 +344,20 @@ graph LR
 <!-- ===== AI/ML 상세 ===== -->
 <section class="portfolio-section" id="sec-ai-ml">
 <h2>AI / ML 상세</h2>
-<p class="section-summary">10종 제조 도메인 ML 모델. 모든 모델은 <code>ml/train_models.py</code>에서 통합 학습, MLflow로 실험 추적합니다.</p>
+<p class="section-summary">7종 제조 도메인 ML 모델. 모든 모델은 <code>ml/train_models.py</code>에서 통합 학습, MLflow로 실험 추적합니다.</p>
 
-<h3 id="ai-models">제조 ML 모델 (10종)</h3>
+<h3 id="ai-models">제조 ML 모델 (7종)</h3>
 <div class="table-wrapper">
 <table>
 <thead><tr><th>#</th><th>모델명</th><th>용도</th><th>알고리즘</th><th>유형</th></tr></thead>
 <tbody>
-  <tr><td>1</td><td>정비품질평가</td><td>정비 작업 품질 자동 평가</td><td>GradientBoosting Classifier</td><td>분류</td></tr>
-  <tr><td>2</td><td>결함분류</td><td>제품 결함 유형 자동 분류</td><td>RandomForest Classifier</td><td>분류</td></tr>
-  <tr><td>3</td><td>설비클러스터</td><td>설비 상태 군집 분석</td><td>KMeans + DBSCAN</td><td>클러스터링</td></tr>
-  <tr><td>4</td><td>불량탐지</td><td>실시간 불량 이상 감지</td><td>Isolation Forest</td><td>이상탐지</td></tr>
-  <tr><td>5</td><td>설비고장예측</td><td>설비 고장 사전 예측</td><td>GradientBoosting Classifier</td><td>분류</td></tr>
-  <tr><td>6</td><td>수율예측</td><td>공정 파라미터 기반 수율</td><td>LightGBM Regressor</td><td>회귀</td></tr>
-  <tr><td>7</td><td>설비RUL</td><td>잔존 수명 예측</td><td>XGBoost Regressor</td><td>회귀</td></tr>
-  <tr><td>8</td><td>생산량예측</td><td>일별/주별 생산량</td><td>XGBoost Regressor</td><td>회귀</td></tr>
-  <tr><td>9</td><td>공정이상탐지</td><td>공정 이상 패턴 탐지</td><td>Isolation Forest</td><td>이상탐지</td></tr>
-  <tr><td>10</td><td>작업자피드백</td><td>감성/중요도 분류</td><td>TF-IDF + LogisticRegression</td><td>분류</td></tr>
+  <tr><td>1</td><td>설비고장예측</td><td>설비 고장 사전 예측 + 근거 설명</td><td>RandomForest + SHAP</td><td>분류</td></tr>
+  <tr><td>2</td><td>불량탐지</td><td>실시간 불량 이상 감지</td><td>Isolation Forest</td><td>이상탐지</td></tr>
+  <tr><td>3</td><td>고장유형분류</td><td>고장 유형 텍스트 자동 분류</td><td>TF-IDF + RandomForest</td><td>분류</td></tr>
+  <tr><td>4</td><td>설비클러스터</td><td>설비 상태 군집 분석</td><td>K-Means</td><td>클러스터링</td></tr>
+  <tr><td>5</td><td>수율예측</td><td>공정 파라미터 기반 수율</td><td>LightGBM Regressor</td><td>회귀</td></tr>
+  <tr><td>6</td><td>정비품질평가</td><td>정비 작업 품질 자동 평가</td><td>RandomForest Classifier</td><td>분류</td></tr>
+  <tr><td>7</td><td>설비RUL</td><td>잔존 수명 예측</td><td>GradientBoosting Regressor</td><td>회귀</td></tr>
 </tbody>
 </table>
 </div>
@@ -482,7 +480,7 @@ graph LR
 
 <h3 id="result-achievements">주요 성과</h3>
 <ul>
-  <li><strong>10종 ML 모델 통합 운영</strong>: 분류, 회귀, 이상탐지, 클러스터링을 하나의 플랫폼에서 학습/배포/모니터링</li>
+  <li><strong>7종 ML 모델 통합 운영</strong>: 분류, 회귀, 이상탐지, 클러스터링을 하나의 플랫폼에서 학습/배포/모니터링</li>
   <li><strong>60fps 실시간 모니터링</strong>: 9 스탠드 x 4채널 = 36개 스트림, Canvas 기반 시각화</li>
   <li><strong>자연어 설비 진단</strong>: "EQ0001 진단해줘" 한 마디로 분석 → 예측 → 정비 계획 자동 실행</li>
   <li><strong>E2E 자동화 예지보전</strong>: 탐지 → SHAP 분석 → 정비 계획 → 조치의 완전 자동화</li>
