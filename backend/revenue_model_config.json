@@ -1,0 +1,14 @@
+{
+  "algorithm": "LightGBM",
+  "features": [
+    "total_production_volume",
+    "txn_count",
+    "active_equipment_count",
+    "avg_yield_rate",
+    "production_growth_rate",
+    "industry_encoded",
+    "region_encoded"
+  ],
+  "mae": 14103206.643220456,
+  "r2_score": 0.9593098375321583
+}

@@ -1,0 +1,38 @@
+{
+  "features": [
+    "total_orders",
+    "total_revenue",
+    "product_count",
+    "cs_tickets",
+    "refund_rate",
+    "avg_response_time",
+    "days_since_last_login",
+    "days_since_register",
+    "plan_tier_encoded"
+  ],
+  "feature_names_kr": {
+    "total_orders": "총 주문수",
+    "total_revenue": "총 매출",
+    "product_count": "상품 수",
+    "cs_tickets": "CS 문의 수",
+    "refund_rate": "환불률",
+    "avg_response_time": "평균 응답 시간",
+    "days_since_last_login": "마지막 로그인 경과일",
+    "days_since_register": "가입 후 경과일",
+    "plan_tier_encoded": "플랜 등급"
+  },
+  "feature_importances": {
+    "total_orders": 0.35706135169490116,
+    "total_revenue": 0.3043979415921027,
+    "product_count": 0.011331572039792449,
+    "cs_tickets": 0.09393467319642518,
+    "refund_rate": 0.027885249111556563,
+    "avg_response_time": 0.008068771314901975,
+    "days_since_last_login": 0.1881838979301533,
+    "days_since_register": 0.007882212393234887,
+    "plan_tier_encoded": 0.0012543307269319087
+  },
+  "shap_available": true,
+  "model_accuracy": 0.9833333333333333,
+  "model_f1": 0.9333333333333333
+}

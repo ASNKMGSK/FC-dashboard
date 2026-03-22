@@ -1,0 +1,32 @@
+# PyTorch / EasyOCR 비활성화 — Railway 메모리 절약 (~500MB)
+# --extra-index-url https://download.pytorch.org/whl/cpu
+# torch
+
+fastapi>=0.110
+uvicorn>=0.24
+httpx>=0.27                # n8n webhook 비동기 호출
+python-dotenv>=1.0         # .env 파일 로드
+pydantic>=2.0
+pyyaml>=6.0                # 프롬프트 YAML 로드
+pandas>=2.0
+numpy>=1.24
+joblib>=1.3
+openai>=1.0
+python-multipart>=0.0.6
+openpyxl>=3.1
+scikit-learn>=1.3        # ML 모델 (sklearn)
+tqdm>=4.66               # 진행 표시줄
+
+# MLOps
+mlflow>=2.10
+
+# OCR — 비활성화 (torch 의존성으로 ~500MB 메모리 소비)
+# easyocr>=1.7
+
+# ML Explainability
+shap>=0.44                # SHAP explainer
+
+# 최적화 (PSO 기반 팀 구성 최적화)
+mealpy>=3.0               # 메타휴리스틱 최적화 (PPSO 포함)
+xgboost>=2.0              # 팀 성능 예측 모델
+lightgbm>=4.0             # 승률 예측 모델

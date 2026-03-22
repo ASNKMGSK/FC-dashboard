@@ -1,0 +1,14 @@
+{
+  "algorithm": "LightGBM",
+  "features": [
+    "equipment_type_encoded",
+    "operating_hours",
+    "vibration",
+    "temperature",
+    "pressure",
+    "current",
+    "oee"
+  ],
+  "mae": 2.866271639792167,
+  "r2_score": -0.17508916454490242
+}

@@ -1,0 +1,169 @@
+{
+  "name": "설비 알림 워크플로우 (스마트팩토리)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "equipment-alert",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000001",
+      "name": "Webhook 트리거",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "equipment-alert"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 알림 검증\nconst raw = $input.first().json;\nconst data = raw.body || raw;\nconst { job_id, alerts, channels } = data;\n\nif (!job_id || !alerts || alerts.length === 0) {\n  throw new Error('Invalid payload: job_id and alerts required');\n}\n\nconst validated = alerts.filter(a => a.alert_text && a.alert_text.length > 0);\n\nreturn [{ json: { job_id, alerts: validated, channels, validated_count: validated.length } }];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000002",
+      "name": "알림 검증",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 채널 분기\nconst { job_id, alerts, channels, validated_count } = $input.first().json;\n\nconst channelMap = {};\nfor (const ch of channels) {\n  channelMap[ch] = alerts.filter(a => (a.channels || []).includes(ch));\n}\n\nreturn [{ json: { job_id, channelMap, channels, alerts, validated_count } }];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000003",
+      "name": "채널 분기",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 채널별 발송 준비\nconst { job_id, channelMap, channels, alerts, validated_count } = $input.first().json;\nconst results = [];\nconst emailItems = [];\n\nconst md2html = (s) => (s || '').replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>').replace(/\\*(.*?)\\*/g, '<em>$1</em>').replace(/\\n/g, '<br>');\n\nfor (const ch of channels) {\n  const items = channelMap[ch] || [];\n  if (items.length === 0) continue;\n\n  if (ch === 'email') {\n    for (const a of items) {\n      const to = a.recipient_email || '';\n      results.push({ channel: ch, to, status: 'pending_send', equipment: a.equipment_id || '' });\n      if (to) {\n        const eqText = md2html(a.equipment_id || '');\n        const aText = md2html(a.alert_text || '');\n        const subj = '[SmartFactory] 설비 알림: ' + (a.equipment_id || '설비') + ' - ' + (a.alert_type || '알림');\n        const html = '<div style=\"font-family:Apple SD Gothic Neo,Malgun Gothic,sans-serif;max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden\">' + '<div style=\"background:linear-gradient(135deg,#0d9488,#14b8a6);padding:24px 32px\">' + '<h1 style=\"color:#ffffff;font-size:20px;margin:0;font-weight:700\">스마트팩토리 설비관리</h1>' + '<p style=\"color:#ccfbf1;font-size:13px;margin:6px 0 0\">설비 상태 알림</p>' + '</div>' + '<div style=\"padding:28px 32px\">' + '<div style=\"margin-bottom:24px\">' + '<p style=\"color:#0d9488;font-size:13px;font-weight:600;margin:0 0 10px\">&#9679; 설비 정보</p>' + '<div style=\"background:#f8fafc;padding:16px 20px;border-radius:8px;border-left:3px solid #0d9488\">' + '<p style=\"margin:0;font-size:14px;line-height:1.7;color:#374151\">' + eqText + '</p>' + '</div></div>' + '<div style=\"margin-bottom:24px\">' + '<p style=\"color:#dc2626;font-size:13px;font-weight:600;margin:0 0 10px\">&#9679; 알림 내용</p>' + '<div style=\"background:#fef2f2;padding:16px 20px;border-radius:8px;border-left:3px solid #dc2626\">' + '<p style=\"margin:0;font-size:14px;line-height:1.8;color:#1f2937\">' + aText + '</p>' + '</div></div>' + '</div>' + '<div style=\"background:#f9fafb;padding:20px 32px;border-top:1px solid #e5e7eb\">' + '<p style=\"margin:0;font-size:12px;color:#9ca3af;line-height:1.5\">본 메일은 설비 상태 자동 알림입니다.<br>즉시 조치가 필요한 경우 설비관리팀에 연락해 주세요.</p>' + '<p style=\"margin:8px 0 0;font-size:11px;color:#d1d5db\">&copy; 스마트팩토리 설비관리시스템</p>' + '</div></div>';\n        emailItems.push({ from: 'SmartFactory <onboarding@resend.dev>', to: [to], subject: subj, html });\n      }\n    }\n  } else if (ch === 'kakao') {\n    for (const a of items) { results.push({ channel: ch, status: 'sent', equipment: a.equipment_id || '' }); }\n  } else if (ch === 'sms') {\n    for (const a of items) { results.push({ channel: ch, status: 'sent', equipment: a.equipment_id || '' }); }\n  } else if (ch === 'mes') {\n    for (const a of items) { results.push({ channel: ch, status: 'sent', equipment: a.equipment_id || '' }); }\n  }\n}\n\nconst hasEmail = emailItems.length > 0;\n\nreturn [{ json: { job_id, results, channels, total: alerts.length, validated_count, emailItems, hasEmail } }];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000004",
+      "name": "채널별 발송",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [920, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "email-check",
+              "leftValue": "={{ $input.first().json.hasEmail }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000010",
+      "name": "이메일 있는지 확인",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1160, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 이메일 분리\nconst prev = $input.first().json;\nconst emailItems = prev.emailItems || [];\n\nif (emailItems.length === 0) {\n  return [{ json: { _skip: true } }];\n}\n\nreturn emailItems.map(email => ({ json: email }));"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000012",
+      "name": "이메일 분리",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1400, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: $json.from, to: $json.to, subject: $json.subject, html: $json.html }) }}",
+        "options": {}
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000008",
+      "name": "Resend 이메일 발송",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1630, 200],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "RESEND_CREDENTIAL_ID",
+          "name": "Resend API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 이메일 결과 수집\nconst items = $input.all();\nconst sentIds = items.map(item => ({ id: item.json.id || 'unknown' }));\nconst prevData = $('이메일 있는지 확인').first().json;\n\nlet idx = 0;\nconst emailResults = (prevData.results || []).map(r => {\n  if (r.channel === 'email' && r.status === 'pending_send') {\n    const resendId = sentIds[idx]?.id || 'unknown';\n    idx++;\n    return { ...r, status: 'sent', resend_id: resendId };\n  }\n  return r;\n});\n\nreturn [{ json: { ...prevData, results: emailResults, emailSent: sentIds.length, resend_ids: sentIds.map(s => s.id) } }];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000011",
+      "name": "이메일 결과 병합",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1880, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// 결과 기록\nconst data = $input.first().json;\nconst { job_id, results, channels, total, validated_count } = data;\n\nconst logEntry = {\n  status: 'SUCCESS',\n  job_id,\n  timestamp: new Date().toISOString(),\n  total_alerts: total,\n  validated_count,\n  channels,\n  sent_count: results.length,\n  results,\n  emailSent: data.emailSent || 0,\n  resend_ids: data.resend_ids || null,\n};\n\nreturn [{ json: logEntry }];"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000005",
+      "name": "결과 기록",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2120, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($input.first().json) }}"
+      },
+      "id": "a1b2c3d4-0001-0001-0001-000000000006",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2340, 300]
+    }
+  ],
+  "connections": {
+    "Webhook 트리거": {
+      "main": [[{ "node": "알림 검증", "type": "main", "index": 0 }]]
+    },
+    "알림 검증": {
+      "main": [[{ "node": "채널 분기", "type": "main", "index": 0 }]]
+    },
+    "채널 분기": {
+      "main": [[{ "node": "채널별 발송", "type": "main", "index": 0 }]]
+    },
+    "채널별 발송": {
+      "main": [[{ "node": "이메일 있는지 확인", "type": "main", "index": 0 }]]
+    },
+    "이메일 있는지 확인": {
+      "main": [
+        [{ "node": "이메일 분리", "type": "main", "index": 0 }],
+        [{ "node": "결과 기록", "type": "main", "index": 0 }]
+      ]
+    },
+    "이메일 분리": {
+      "main": [[{ "node": "Resend 이메일 발송", "type": "main", "index": 0 }]]
+    },
+    "Resend 이메일 발송": {
+      "main": [[{ "node": "이메일 결과 병합", "type": "main", "index": 0 }]]
+    },
+    "이메일 결과 병합": {
+      "main": [[{ "node": "결과 기록", "type": "main", "index": 0 }]]
+    },
+    "결과 기록": {
+      "main": [[{ "node": "Respond to Webhook", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "pinData": {},
+  "meta": { "templateCredsSetupCompleted": true, "instanceId": "smartfactory-equipment-workflow" }
+}

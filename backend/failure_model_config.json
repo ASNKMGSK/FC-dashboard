@@ -1,0 +1,38 @@
+{
+  "features": [
+    "operating_hours",
+    "fault_count",
+    "downtime_hours",
+    "vibration",
+    "temperature",
+    "pressure",
+    "current",
+    "days_since_install",
+    "grade_encoded"
+  ],
+  "feature_names_kr": {
+    "operating_hours": "가동시간",
+    "fault_count": "고장횟수",
+    "downtime_hours": "다운타임(시간)",
+    "vibration": "진동",
+    "temperature": "온도",
+    "pressure": "압력",
+    "current": "전류",
+    "days_since_install": "설치후경과일",
+    "grade_encoded": "설비등급"
+  },
+  "feature_importances": {
+    "operating_hours": 0.11855585720116495,
+    "fault_count": 0.3081176226211725,
+    "downtime_hours": 0.08916832171330145,
+    "vibration": 0.16670059967419298,
+    "temperature": 0.10163875951560115,
+    "pressure": 0.0969369000894018,
+    "current": 0.05784460835342552,
+    "days_since_install": 0.030819499498691023,
+    "grade_encoded": 0.030217831333048534
+  },
+  "shap_available": true,
+  "model_accuracy": 0.9333333333333333,
+  "model_f1": 0.8666666666666667
+}

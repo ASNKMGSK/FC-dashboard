@@ -1,0 +1,83 @@
+# =========================
+# ONLY TRACK THESE (override)
+# =========================
+
+# 기본: 전부 제외
+*
+
+# 예외: 폴더 자체는 탐색 허용
+!*/
+
+# 허용: 코드 파일만 포함
+!.gitignore
+!README.md
+!portfolio/**
+!docs/**
+!requirements.txt
+!nextjs/**
+!backend/**
+
+# =========================
+# 절대 제외 (허용 후 다시 차단)
+# =========================
+
+# Secrets / 환경변수
+.env
+.env.*
+**/.env
+**/.env.*
+*_api_key.txt
+**/*_api_key.txt
+*.pem
+*.key
+
+# Data / Models (바이너리)
+*.pkl
+*.joblib
+*.pt
+*.pth
+*.onnx
+*.bin
+*.csv
+*.parquet
+*.sqlite
+*.db
+
+# MLflow
+**/mlruns/
+mlruns/
+
+# Python
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+
+# Node / Next
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+out/
+
+# Notebook
+*.ipynb
+**/.ipynb_checkpoints/
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+.claude/
+
+# Logs
+**/logs/
+*.log
+
+# Temp
+tmp/
+temp/
+nul
+**/nul

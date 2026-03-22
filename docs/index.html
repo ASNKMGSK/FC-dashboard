@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <title>FMCS 사상압연 스마트팩토리 AI 플랫폼 - 포트폴리오</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FMCS 사상압연 스마트팩토리 AI 플랫폼 - 제조 현장을 위한 ML 기반 AI 시스템">
+  <meta property="og:title" content="FMCS 사상압연 스마트팩토리 AI 플랫폼 - 포트폴리오">
+  <meta property="og:description" content="FMCS 스탠드 실시간 제어/모니터링, 품질 SPC 분석, AI 모델/MLOps, 정비 관리를 통합한 제조 AI 운영 시스템">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://asngg.github.io/smartfactory-ai/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="FMCS 사상압연 스마트팩토리 AI 플랫폼">
+  <meta name="twitter:description" content="FMCS 사상압연 라인 ML 기반 AI 운영 시스템 포트폴리오">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js" charset="UTF-8"></script>
+
+  <style>
+/* ========================================
+   Portfolio CSS - BCG/McKinsey Consulting Style
+   ======================================== */
+html { scroll-behavior: smooth; }
+html body, html body[for=html-export] { font-family: 'Inter', 'Noto Sans KR', 'Helvetica Neue', Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 1.65; color: #2D3748; background-color: #FFFFFF !important; overflow: initial; box-sizing: border-box; word-wrap: break-word; }
+html body > :first-child { margin-top: 0; }
+html body h1, html body h2, html body h3, html body h4, html body h5, html body h6 { font-family: 'Inter', 'Noto Sans KR', sans-serif; line-height: 1.3; margin-top: 1.2em; margin-bottom: 0.4em; letter-spacing: -0.01em; }
+html body h1 { font-size: 2.5em; font-weight: 800; color: #1A202C; border-bottom: 4px solid #00875A; padding-bottom: 0.35em; }
+html body h2 { font-size: 1.65em; font-weight: 700; color: #1B365D; border-bottom: none; border-left: 5px solid #00875A; padding-left: 16px; margin-top: 1.8em; margin-bottom: 0.6em; }
+html body h3 { font-size: 1.35em; font-weight: 600; color: #1A202C; border-top: 1px dashed #E2E8F0; padding-top: 0.7em; margin-top: 1.2em; }
+html body h4 { font-size: 1.15em; font-weight: 600; color: #1A202C; }
+html body h5 { font-size: 1em; font-weight: 600; color: #1A202C; }
+html body h6 { font-size: 1em; font-weight: 600; color: #718096; }
+html body strong { color: #1A202C; font-weight: 700; }
+html body del { color: #A0AEC0; }
+html body > p { margin-top: 0; margin-bottom: 14px; word-wrap: break-word; }
+html body a:not([href]) { color: inherit; text-decoration: none; }
+html body a { color: #2B6CB0; text-decoration: underline; text-underline-offset: 2px; transition: color 0.2s ease; font-weight: 500; }
+html body a:hover { color: #00875A; }
+html body img { max-width: 100%; border-radius: 4px; }
+html body > ol, html body > ul { margin-bottom: 16px; }
+html body ol, html body ul { padding-left: 2em; }
+html body li { margin-bottom: 0.25em; }
+html body li > p { margin-top: 0; margin-bottom: 0; }
+html body blockquote { margin: 12px 0; font-size: 0.97em; padding: 1em 1.4em; color: #2D3748; background-color: #F0FFF4; border-left: 5px solid #00875A; border-radius: 0 8px 8px 0; }
+html body blockquote > :first-child { margin-top: 0; }
+html body blockquote > :last-child { margin-bottom: 0; }
+html body hr { height: 1px; margin: 28px 0; border: 0 none; opacity: 0.5; border-top: 1px dashed #CBD5E0; }
+html body table { margin: 10px 0 15px 0; border-collapse: collapse; border-spacing: 0; display: table; width: 100%; word-break: keep-all; border-radius: 10px; overflow: hidden; }
+html body table th { font-weight: 600; color: #FFFFFF; background-color: #1B365D; padding: 10px 14px; border: 1px solid #1B365D; font-size: 0.83em; text-transform: uppercase; letter-spacing: 0.05em; }
+html body table td { background-color: #FFFFFF; border: 1px solid #E2E8F0; padding: 9px 14px; font-size: 0.92em; line-height: 1.5; }
+html body table tr:nth-child(even) td { background-color: #F0F4F8; }
+html body table td:first-child { font-weight: 600; color: #1A202C; background-color: rgba(27,54,93,0.03); }
+html body table tr:hover td { background-color: #E8EDF5; transition: background-color 0.2s ease; }
+html body table tr:hover td:first-child { box-shadow: inset 3px 0 0 #00875A; }
+html body code { font-family: 'JetBrains Mono', Consolas, Menlo, Courier, monospace; font-size: 0.88em; color: #1B365D; background-color: #EDF2F7; border-radius: 4px; padding: 2px 6px; border: 1px solid #E2E8F0; }
+html body pre > code { padding: 0; margin: 0; word-break: normal; white-space: pre; background: 0 0; border: 0; color: #2D3748; }
+html body .highlight pre, html body pre { padding: 1em; overflow: auto; font-size: 0.9em; line-height: 1.5; background: #F7FAFC; border: 1px solid #E2E8F0; border-left: 3px solid #00875A; border-radius: 8px; }
+html body pre code, html body pre tt { display: inline; max-width: initial; padding: 0; margin: 0; overflow: initial; line-height: inherit; word-wrap: normal; background-color: transparent; border: 0; color: inherit; }
+html body blockquote, html body dl, html body ol, html body p, html body pre, html body ul { margin-top: 0; margin-bottom: 14px; }
+.mermaid-container { overflow-x: auto; margin: 1em 0; background: #FAFBFC; border: 1px solid #E2E8F0; border-radius: 10px; padding: 14px; text-align: center; }
+.table-wrapper { overflow-x: auto; margin: 10px 0 15px 0; border-radius: 10px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); }
+.table-wrapper table { margin: 0; }
+.badge-container { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 1em 0; }
+.qr-container { margin: 1.2em 0 0.5em 0; text-align: center; }
+.qr-container img { border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); opacity: 0.9; }
+.qr-container .qr-caption { font-size: 0.85em; color: #718096; margin-top: 6px; }
+.hero-section { text-align: center; padding: 1.8em 0 0.8em 0; }
+.hero-title { font-size: 2.4em; margin-bottom: 0.2em; border-bottom: none; text-align: center; }
+.hero-subtitle { font-size: 1.15em; color: #1B365D; font-weight: 600; margin-bottom: 0.6em; text-align: center; }
+.hero-desc { font-size: 0.98em; color: #2D3748; max-width: 720px; margin: 0 auto 1em auto; line-height: 1.6; text-align: center; }
+.hero-desc strong { color: #00875A; }
+.hero-divider { width: 60px; height: 3px; background: linear-gradient(90deg, #00875A, #1B365D); border-radius: 2px; margin: 0 auto 1em auto; }
+.hero-links { margin-top: 1.2em; font-size: 1em; }
+.hero-links a { font-weight: 600; }
+.hero-links .hero-period { color: #718096; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 0.8em 0 1.2em 0; }
+.stat-card { background: #FFFFFF; border: 1px solid #E2E8F0; border-radius: 10px; padding: 18px 14px; text-align: center; transition: transform 0.2s ease, box-shadow 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(27,54,93,0.12); }
+.stat-label { font-size: 0.85em; font-weight: 600; color: #718096; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-value { font-size: 2em; font-weight: 800; color: #00875A; }
+.stat-desc { font-size: 0.8em; color: #A0AEC0; margin-top: 4px; }
+.stat-icon { font-size: 1.8em; margin-bottom: 6px; }
+.portfolio-header { margin-bottom: 1em; }
+.portfolio-section { margin-bottom: 1.5em; }
+.portfolio-footer { text-align: center; padding-top: 1.5em; border-top: 1px solid #E2E8F0; margin-top: 2em; color: #718096; }
+.section-summary { font-size: 0.97em; color: #1B365D; font-weight: 500; background: #F0F4F8; padding: 10px 16px; border-radius: 6px; border-left: 4px solid #00875A; margin-bottom: 1em; }
+.toc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; max-width: 800px; }
+.toc-item { display: flex; align-items: center; padding: 5px 10px; border-radius: 6px; color: #2D3748; font-weight: 500; transition: background 0.15s; text-decoration: none; border-left: 3px solid #E2E8F0; }
+.toc-item:hover { background: #F0F4F8; color: #2D3748; text-decoration: none; }
+.toc-num { color: #00875A; font-weight: 700; margin-right: 10px; min-width: 24px; }
+#portfolio-nav { position: sticky; top: 0; z-index: 1000; background: rgba(27,54,93,0.97); backdrop-filter: blur(10px); border-bottom: 1px solid #2D4A7A; padding: 0 20px; font-family: 'Inter','Noto Sans KR',sans-serif; font-size: 13px; display: flex; align-items: center; justify-content: space-between; height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.nav-logo { font-weight: 700; color: #FFFFFF; text-decoration: none; font-size: 15px; white-space: nowrap; }
+#nav-hamburger { display: none; background: none; border: none; font-size: 22px; cursor: pointer; color: #FFFFFF; padding: 4px 8px; }
+#nav-links { display: flex; gap: 4px; align-items: center; overflow-x: auto; flex-wrap: nowrap; }
+.nav-link { padding: 4px 8px; color: rgba(255,255,255,0.8); text-decoration: none; white-space: nowrap; border-radius: 4px; transition: all 0.2s; }
+.nav-link:hover, .nav-link.active { background: #00875A; color: #FFFFFF; }
+@media screen and (max-width: 768px) { #nav-hamburger { display: block; } #nav-links { display: none; position: absolute; top: 48px; left: 0; right: 0; background: rgba(255,255,255,0.98); flex-direction: column; padding: 8px 16px; gap: 2px; } #nav-links.nav-open { display: flex !important; } .nav-link { padding: 10px 12px !important; } }
+#back-to-top { position: fixed; bottom: 30px; right: 30px; width: 44px; height: 44px; border-radius: 50%; background: #00875A; color: #FFFFFF; border: none; font-size: 20px; cursor: pointer; opacity: 0; pointer-events: none; transition: opacity 0.3s; z-index: 999; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+#back-to-top.visible { opacity: 1; pointer-events: auto; }
+.footer-content { max-width: 900px; margin: 0 auto; }
+.footer-tech-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 8px 18px; text-align: left; margin: 1.2em auto; max-width: 900px; }
+.footer-tech-item { padding: 8px 12px; border-left: 3px solid #00875A; background: #F7FAFC; border-radius: 0 6px 6px 0; }
+.footer-tech-item strong { color: #1B365D; font-size: 0.95em; display: block; margin-bottom: 4px; }
+.footer-tech-item span { color: #4A5568; font-size: 0.88em; line-height: 1.5; }
+.footer-divider { width: 60px; height: 3px; background: #00875A; border-radius: 2px; margin: 1.5em auto 1em auto; }
+.footer-title { font-size: 1.1em; margin-bottom: 0.5em; }
+.footer-subtitle { color: #718096; font-size: 0.92em; margin-bottom: 1.2em; }
+.footer-summary-title { text-align: center; font-size: 1.4em; margin-bottom: 1em; }
+.footer-buttons { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.footer-btn { display: inline-block; padding: 10px 24px; color: #FFFFFF; border-radius: 8px; font-weight: 600; font-size: 0.95em; text-decoration: none; transition: background 0.2s; }
+.footer-btn-primary { background: #00875A; }
+.footer-btn-primary:hover { background: #006B47; color: #FFFFFF; text-decoration: none; }
+.footer-btn-secondary { background: #1B365D; }
+.footer-btn-secondary:hover { background: #15294A; color: #FFFFFF; text-decoration: none; }
+html body[for=html-export]:not([data-presentation-mode]) { position: relative; width: 100%; height: 100%; top: 0; left: 0; margin: 0; padding: 0; overflow: auto; }
+html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { position: relative; top: 0; min-height: 100vh; max-width: 1160px; margin: 0 auto; padding: 2em 3.5em; }
+@media screen and (max-width: 1164px) { html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { padding: 2em; } }
+@media screen and (max-width: 480px) { html body[for=html-export]:not([data-presentation-mode]) .markdown-preview { font-size: 14px !important; padding: 1em; } }
+@media print { html body, html body[for=html-export] { background-color: #FFFFFF !important; -webkit-print-color-adjust: exact !important; } html body pre { page-break-inside: avoid; } html body table { display: table; } }
+  </style>
+
+  <script type="text/javascript">
+  document.addEventListener("DOMContentLoaded", function () {
+    var backToTopBtn = document.getElementById('back-to-top');
+    var navLinks = document.querySelectorAll('.nav-link');
+    var sectionIds = [];
+    navLinks.forEach(function(link) { sectionIds.push(link.getAttribute('href').substring(1)); });
+    window.addEventListener('scroll', function () {
+      if (backToTopBtn) { if (window.scrollY > 300) backToTopBtn.classList.add('visible'); else backToTopBtn.classList.remove('visible'); }
+      var scrollPos = window.scrollY + 80, currentSection = '';
+      for (var i = sectionIds.length - 1; i >= 0; i--) { var el = document.getElementById(sectionIds[i]); if (el && el.offsetTop <= scrollPos) { currentSection = sectionIds[i]; break; } }
+      navLinks.forEach(function(link) { if (link.getAttribute('href').substring(1) === currentSection) link.classList.add('active'); else link.classList.remove('active'); });
+    });
+    navLinks.forEach(function(link) { link.addEventListener('click', function() { var d = document.getElementById('nav-links'); if (d) d.classList.remove('nav-open'); }); });
+    if (typeof mermaid !== 'undefined') { mermaid.initialize({startOnLoad: true, theme: 'neutral', themeVariables: {fontSize: '14px'}}); }
+  });
+  </script>
+</head>
+<body for="html-export">
+
+  <nav id="portfolio-nav">
+    <a href="#hero" class="nav-logo">FMCS 스마트팩토리 AI</a>
+    <button id="nav-hamburger" onclick="document.getElementById('nav-links').classList.toggle('nav-open')">&#9776;</button>
+    <div id="nav-links">
+      <a href="#executive-summary" class="nav-link">At a Glance</a>
+      <a href="#sec-core-features" class="nav-link">핵심 기능</a>
+      <a href="#sec-architecture" class="nav-link">아키텍처</a>
+      <a href="#sec-ai-ml" class="nav-link">AI/ML</a>
+      <a href="#sec-frontend" class="nav-link">프론트엔드</a>
+      <a href="#sec-api" class="nav-link">API</a>
+      <a href="#sec-results" class="nav-link">성과</a>
+    </div>
+  </nav>
+
+  <div class="crossnote markdown-preview">
+
+<header class="portfolio-header">
+<div class="hero-section" id="hero">
+  <h1 class="hero-title">FMCS 사상압연 스마트팩토리 AI 플랫폼</h1>
+  <p class="hero-subtitle">제조 현장을 위한 ML 기반 AI 운영 시스템</p>
+  <p class="hero-desc">H형강 사상압연 공정의 <strong>3개 라인 x 9개 스탠드</strong>를 실시간으로 모니터링, 제어, 분석하는 풀스택 AI 플랫폼.<br>10종 ML 모델과 Canvas 60fps 실시간 차트로 설비 진단, 품질 SPC, 공정 최적화, 예지보전을 수행합니다.</p>
+  <div class="hero-divider"></div>
+  <p class="badge-container">
+    <img src="https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js" alt="Next.js 14">
+    <img src="https://img.shields.io/badge/FastAPI-0.100+-009688?style=flat-square&logo=fastapi" alt="FastAPI">
+    <img src="https://img.shields.io/badge/SHAP-Explainable_AI-FF6F00?style=flat-square" alt="SHAP">
+    <img src="https://img.shields.io/badge/scikit--learn-1.3+-F7931E?style=flat-square&logo=scikit-learn" alt="scikit-learn">
+    <img src="https://img.shields.io/badge/XGBoost-2.0+-006600?style=flat-square" alt="XGBoost">
+    <img src="https://img.shields.io/badge/LightGBM-4.0+-9B59B6?style=flat-square" alt="LightGBM">
+    <img src="https://img.shields.io/badge/MLflow-2.0+-0194E2?style=flat-square&logo=mlflow" alt="MLflow">
+    <img src="https://img.shields.io/badge/Recharts-Charts-FF6384?style=flat-square" alt="Recharts">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-3.0+-06B6D4?style=flat-square&logo=tailwindcss" alt="Tailwind CSS">
+    <img src="https://img.shields.io/badge/Canvas_2D-60fps-FF6B6B?style=flat-square" alt="Canvas 2D">
+  </p>
+  <div class="hero-links">
+    <span class="hero-period">개발 기간: 2025.01 ~ 진행 중</span> &nbsp;|&nbsp; <a href="https://asngg.github.io/smartfactory-ai/">GitHub Pages</a>
+  </div>
+  <div class="qr-container">
+    <img src="qr-webapp.png" alt="웹앱 QR" width="100">
+    <p class="qr-caption">웹앱 바로가기</p>
+  </div>
+</div>
+<blockquote>
+  <p><strong>Live Demo</strong> &mdash; 실시간 시뮬레이션 엔진이 내장되어 있어, 별도 데이터 없이 즉시 모든 기능을 체험할 수 있습니다. 스탠드 제어, 품질 SPC, MLOps 대시보드를 직접 조작해 보세요.</p>
+  <p><strong>Note</strong> &mdash; 본 솔루션은 실제 철강압연 프로젝트에서 운영 중인 FMCS 시스템과 매우 흡사하게 설계·구현하였습니다. 사상압연 공정의 스탠드 제어, 실시간 모니터링, 품질 관리 등 핵심 기능을 충실히 재현하여 현장 적용 가능성을 보여줍니다.</p>
+</blockquote>
+</header>
+
+<main>
+
+<!-- ===== AT A GLANCE ===== -->
+<section class="portfolio-section" id="executive-summary">
+<hr>
+<h2>At a Glance</h2>
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon">&#9881;</div><div class="stat-label">생산라인</div><div class="stat-value">3 x 9</div><div class="stat-desc">3개 라인 x 9개 스탠드</div></div>
+  <div class="stat-card"><div class="stat-icon">&#129302;</div><div class="stat-label">ML 모델</div><div class="stat-value">10</div><div class="stat-desc">분류/회귀/이상탐지/클러스터링</div></div>
+  <div class="stat-card"><div class="stat-icon">&#128202;</div><div class="stat-label">운영 패널</div><div class="stat-value">6</div><div class="stat-desc">대시보드/제어/분석/ML/사용자/로그</div></div>
+  <div class="stat-card"><div class="stat-icon">&#128295;</div><div class="stat-label">에이전트 도구</div><div class="stat-value">30+</div><div class="stat-desc">Dual-Layer 패턴</div></div>
+  <div class="stat-card"><div class="stat-icon">&#128200;</div><div class="stat-label">실시간 차트</div><div class="stat-value">60fps</div><div class="stat-desc">Canvas 2D + RAF 통합 루프</div></div>
+  <div class="stat-card"><div class="stat-icon">&#128225;</div><div class="stat-label">SSE 이벤트</div><div class="stat-value">7종</div><div class="stat-desc">실시간 스트리밍 프로토콜</div></div>
+</div>
+<hr>
+<nav aria-label="목차">
+  <h2>목차</h2>
+  <div class="toc-grid">
+    <a href="#sec-core-features" class="toc-item"><span class="toc-num">01</span> 핵심 기능</a>
+    <a href="#sec-architecture" class="toc-item"><span class="toc-num">02</span> 기술 아키텍처</a>
+    <a href="#sec-ai-ml" class="toc-item"><span class="toc-num">03</span> AI/ML 상세</a>
+    <a href="#sec-frontend" class="toc-item"><span class="toc-num">04</span> 프론트엔드 상세</a>
+    <a href="#sec-api" class="toc-item"><span class="toc-num">05</span> API 엔드포인트</a>
+    <a href="#sec-results" class="toc-item"><span class="toc-num">06</span> 성과/차별점</a>
+  </div>
+</nav>
+</section>
+
+<!-- ===== 핵심 기능 ===== -->
+<section class="portfolio-section" id="sec-core-features">
+<h2>핵심 기능</h2>
+<p class="section-summary">6개 운영 패널로 사상압연 공정의 전 라이프사이클을 커버합니다. 각 패널은 <code>dynamic()</code> import로 필요 시에만 로드되어 초기 번들 크기를 최소화합니다.</p>
+
+<h3 id="feat-fmcs">1. FMCS 실시간 모니터링 (StandControlPanel)</h3>
+<p>FMCS 사상압연 라인의 <strong>9개 스탠드를 실시간 제어</strong>하는 핵심 패널입니다. 백엔드의 <code>StandSimulator</code> 엔진이 시간 기반 연속 시뮬레이션으로 물리적으로 일관된 공정 데이터를 생성합니다.</p>
+<ul>
+  <li><strong>빌렛 이동 애니메이션</strong>: 9 스탠드 순차 진행 스텝 인디케이터, 현재 스탠드 펄스 애니메이션</li>
+  <li><strong>AI 자동제어 / 수동제어</strong> 모드 전환 (ai_auto / manual)</li>
+  <li><strong>스탠드별 전류/속도/하중/온도</strong>: Canvas 2D 기반 60fps 실시간 차트 (<code>RealtimeLineCanvas</code>)</li>
+  <li><strong>Cascade Mode</strong>: 연동 제어 ON/OFF, Roll Gap, HMD 상태 표시</li>
+  <li><strong>스탠드 상세 패널</strong>: 클릭 시 Load/Speed 상세 차트 + 운전 파라미터</li>
+  <li><strong>3개 라인 선택</strong>: FM-LINE1, FM-LINE2, FM-LINE3 (각각 독립 시뮬레이터 인스턴스)</li>
+</ul>
+
+<h3 id="feat-quality">2. 품질 관리 / SPC 분석 (AnalysisPanel)</h3>
+<p>공정 품질 데이터를 5개 서브 탭으로 다각도 분석합니다.</p>
+<ul>
+  <li><strong>TrendTab</strong>: 시계열 추이, SPC 관리도 (UCL/LCL)</li>
+  <li><strong>AnomalyTab</strong>: Isolation Forest 기반 이상 패턴 탐지, 피스별 SPC</li>
+  <li><strong>PredictionTab</strong>: 수율/생산량/OEE 예측 시뮬레이션</li>
+  <li><strong>MaintenanceTab</strong>: 정비 이력, 자동배정, 품질평가 점수</li>
+  <li><strong>LifecycleTab</strong>: 설비 잔존수명(RUL) 예측, 교체 주기 분석</li>
+</ul>
+
+<h3 id="feat-ai-mlops">3. AI 예측 / MLOps (ModelsPanel)</h3>
+<p>10종 ML 모델의 전체 라이프사이클을 통합 UI에서 관리합니다.</p>
+<ul>
+  <li><strong>MLflow 모델 레지스트리</strong>: 모델 버전/스테이지 관리 (Production/Archived)</li>
+  <li><strong>모델 드리프트 모니터링</strong>: RMSE 30일 추이 + Feature PSI (10개 피처, 임계값 0.003)</li>
+  <li><strong>원클릭 재학습</strong>: SSE 스트림 4단계 진행률 (전처리 → 학습 → 평가 → 배포)</li>
+  <li><strong>앙상블 가중치</strong>: XGBoost(0.4) + LightGBM(0.35) + RF(0.25), 5~10% 성능 개선</li>
+  <li><strong>A/B 테스트</strong>: RMSE, R2, MAE, 추론시간(ms) 비교 → 자동 추천</li>
+</ul>
+
+<h3 id="feat-maintenance">4. 정비 관리</h3>
+<p>예지보전(Predictive Maintenance) 기반 자동화 시스템입니다.</p>
+<ul>
+  <li><strong>위험 설비 자동 탐지</strong>: SHAP 기반 고장 위험 요인 Top-5, Heuristic + ML 스코어링</li>
+  <li><strong>자동 정비 계획</strong>: 설비 분석 → 위험도 평가 → 정비 방안 → 조치 실행</li>
+  <li><strong>트러블슈팅 FAQ</strong>: TF-IDF + KMeans → Elbow Method → LLM 가이드 생성</li>
+  <li><strong>생산 리포트</strong>: 일별/주별/월별 KPI 자동 집계 + 이상 이벤트 하이라이트</li>
+</ul>
+
+</section>
+
+<!-- ===== 기술 아키텍처 ===== -->
+<section class="portfolio-section" id="sec-architecture">
+<h2>기술 아키텍처</h2>
+<p class="section-summary">3-Tier 프록시 아키텍처: Browser → Next.js :3000 → FastAPI :8001. 브라우저는 Next.js만 바라보고, Next.js가 백엔드를 프록시하여 CORS/인증을 통합 관리합니다.</p>
+
+<h3 id="arch-system">시스템 구성도</h3>
+<div class="mermaid-container">
+  <div class="mermaid">
+graph LR
+    subgraph Client["Browser"]
+        A["React SPA<br/>6 Panel UI"]
+    end
+    subgraph Proxy["Next.js 14 :3000"]
+        B["Pages Router<br/>+ SSE Proxy"]
+    end
+    subgraph Backend["FastAPI :8001"]
+        C["7 Domain Routers"]
+        E["ML Engine<br/>10 Models"]
+        G["StandSimulator<br/>3 Lines x 9 Stands"]
+    end
+    subgraph Data["Data Layer"]
+        H["state.py<br/>Global Singleton"]
+        I["CSV / PKL"]
+        J["MLflow Registry"]
+    end
+    A -->|"REST + SSE"| B
+    B -->|"Rewrite Proxy"| C
+    C --> E
+    C --> G
+    E --> H
+    G --> H
+    H --> I
+    E --> J
+    style Client fill:#EBF8FF,stroke:#2B6CB0,stroke-width:2px
+    style Proxy fill:#F0FFF4,stroke:#00875A,stroke-width:2px
+    style Backend fill:#FFF5F5,stroke:#E53E3E,stroke-width:2px
+    style Data fill:#FFFFF0,stroke:#D69E2E,stroke-width:2px
+  </div>
+</div>
+
+<h3 id="arch-proxy">프록시 / 통신 구조</h3>
+<pre><code>Browser --> localhost:3000/api/* --> (Next.js rewrite) --> localhost:8001/api/*
+예외: /api/agent/stream --> Next.js API Route --> createSSEProxyHandler() --> FastAPI SSE</code></pre>
+<ul>
+  <li><code>next.config.js</code>: <code>/api/agent/stream</code>은 API Route로 SSE 프록시, 나머지 <code>/api/*</code>는 FastAPI rewrite</li>
+  <li><code>lib/sseProxy.js</code>: SSE 스트리밍 프록시 공통화</li>
+  <li>인증: Basic Auth, <code>makeBasicAuthHeader()</code></li>
+  <li>GZip: <code>GZipMiddleware(minimum_size=1000)</code></li>
+</ul>
+
+<h3 id="arch-backend">백엔드 모듈 구조</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>모듈</th><th>역할</th><th>핵심 기술</th></tr></thead>
+<tbody>
+  <tr><td><code>main.py</code></td><td>FastAPI 앱 진입점, 미들웨어, lifespan</td><td>FastAPI 2.0, Uvicorn, GZip</td></tr>
+  <tr><td><code>state.py</code></td><td>전역 상태 싱글톤 (DataFrame, ML, 설정)</td><td>Pandas, joblib, Threading Lock</td></tr>
+  <tr><td><code>api/routes.py</code></td><td>7개 도메인별 라우터 통합</td><td>APIRouter, Depends</td></tr>
+  <tr><td><code>api/routes_stands.py</code></td><td>9 스탠드 시뮬레이션 엔진</td><td>Sin Lookup Table, deque, Lock</td></tr>
+  <tr><td><code>api/routes_ml.py</code></td><td>MLflow, 드리프트, 앙상블, A/B</td><td>MLflow, numpy, SSE</td></tr>
+  <tr><td><code>api/routes_automation.py</code></td><td>자동화 4대 기능</td><td>SHAP, KMeans, P-PSO, LLM</td></tr>
+  <tr><td><code>ml/</code></td><td>모델 학습, MLflow 추적</td><td>scikit-learn, XGBoost, LightGBM</td></tr>
+  <tr><td><code>data/loader.py</code></td><td>PKL 로딩, dtype 최적화</td><td>Pandas, ThreadPoolExecutor</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="arch-data">데이터 흐름</h3>
+<p><strong>state.py</strong>가 전체 시스템의 중심입니다. 모든 모듈이 <code>import state as st</code>로 참조하는 싱글톤 패턴으로 DataFrame, ML 모델, 설정을 한 곳에서 관리합니다.</p>
+<ul>
+  <li><strong>시작</strong>: <code>lifespan</code>에서 <code>init_data_models()</code> → PKL 로딩 + ML 모델 로딩 (ThreadPoolExecutor 병렬)</li>
+  <li><strong>최적화</strong>: <code>_optimize_df_memory()</code> — object→category, int64→int32, float64→float32</li>
+  <li><strong>시뮬레이터</strong>: <code>StandSimulator</code> 싱글턴, 시간 기반 연속 데이터 생성</li>
+  <li><strong>캐시</strong>: <code>EQUIPMENT_PERF_MAP</code> 딕셔너리로 O(1) 설비 성능 조회</li>
+</ul>
+</section>
+
+<!-- ===== AI/ML 상세 ===== -->
+<section class="portfolio-section" id="sec-ai-ml">
+<h2>AI / ML 상세</h2>
+<p class="section-summary">10종 제조 도메인 ML 모델. 모든 모델은 <code>ml/train_models.py</code>에서 통합 학습, MLflow로 실험 추적합니다.</p>
+
+<h3 id="ai-models">제조 ML 모델 (10종)</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>#</th><th>모델명</th><th>용도</th><th>알고리즘</th><th>유형</th></tr></thead>
+<tbody>
+  <tr><td>1</td><td>정비품질평가</td><td>정비 작업 품질 자동 평가</td><td>GradientBoosting Classifier</td><td>분류</td></tr>
+  <tr><td>2</td><td>결함분류</td><td>제품 결함 유형 자동 분류</td><td>RandomForest Classifier</td><td>분류</td></tr>
+  <tr><td>3</td><td>설비클러스터</td><td>설비 상태 군집 분석</td><td>KMeans + DBSCAN</td><td>클러스터링</td></tr>
+  <tr><td>4</td><td>불량탐지</td><td>실시간 불량 이상 감지</td><td>Isolation Forest</td><td>이상탐지</td></tr>
+  <tr><td>5</td><td>설비고장예측</td><td>설비 고장 사전 예측</td><td>GradientBoosting Classifier</td><td>분류</td></tr>
+  <tr><td>6</td><td>수율예측</td><td>공정 파라미터 기반 수율</td><td>LightGBM Regressor</td><td>회귀</td></tr>
+  <tr><td>7</td><td>설비RUL</td><td>잔존 수명 예측</td><td>XGBoost Regressor</td><td>회귀</td></tr>
+  <tr><td>8</td><td>생산량예측</td><td>일별/주별 생산량</td><td>XGBoost Regressor</td><td>회귀</td></tr>
+  <tr><td>9</td><td>공정이상탐지</td><td>공정 이상 패턴 탐지</td><td>Isolation Forest</td><td>이상탐지</td></tr>
+  <tr><td>10</td><td>작업자피드백</td><td>감성/중요도 분류</td><td>TF-IDF + LogisticRegression</td><td>분류</td></tr>
+</tbody>
+</table>
+</div>
+
+
+<h3 id="ai-automation">자동화 시스템</h3>
+<p>4대 자동화 엔진, "탐지 → 분석 → 자동 실행" 파이프라인:</p>
+<ul>
+  <li><strong>고장예방정비</strong>: SHAP 위험 분석 → 정비 계획 → 4종 자동 조치 (SSE 스트리밍)</li>
+  <li><strong>트러블슈팅 FAQ</strong>: TF-IDF + KMeans → Elbow Method → LLM 가이드 → 승인 워크플로우</li>
+  <li><strong>생산 리포트</strong>: 일별/주별/월별 자동 생성, KPI 집계 + 이상 하이라이트</li>
+  <li><strong>설비 최적화</strong>: P-PSO 알고리즘 → 최적화 후보 스코어링 → 추천 → 조치 실행 (SSE 스트리밍)</li>
+</ul>
+</section>
+
+<!-- ===== 프론트엔드 ===== -->
+<section class="portfolio-section" id="sec-frontend">
+<h2>프론트엔드 상세</h2>
+<p class="section-summary">Next.js 14 (Pages Router) + Tailwind CSS + Canvas 2D. 6패널 <code>dynamic()</code> import 코드 분할, Page Visibility API 비활성 탭 최적화.</p>
+
+<h3 id="fe-panels">6패널 SPA 구조</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>패널</th><th>파일</th><th>핵심 기능</th><th>권한</th></tr></thead>
+<tbody>
+  <tr><td>공정 모니터링</td><td><code>DashboardPanel.js</code></td><td>KPI 카드, 생산량/가동률 차트, 설비 알림</td><td>전체</td></tr>
+  <tr><td>스탠드 제어</td><td><code>StandControlPanel.js</code></td><td>9 스탠드 제어, 빌렛 애니메이션, Canvas 차트</td><td>관리자</td></tr>
+  <tr><td>품질/SPC</td><td><code>AnalysisPanel.js</code></td><td>5 서브 탭 (트렌드/이상/예측/정비/라이프사이클)</td><td>전체</td></tr>
+  <tr><td>AI/MLOps</td><td><code>ModelsPanel.js</code></td><td>MLflow, 드리프트, 재학습, 앙상블, A/B</td><td>관리자</td></tr>
+  <tr><td>사용자 관리</td><td><code>UsersPanel.js</code></td><td>계정 관리, RBAC</td><td>관리자</td></tr>
+  <tr><td>시스템 로그</td><td><code>LogsPanel.js</code></td><td>활동 로그 타임라인</td><td>관리자</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="fe-charts">RealtimeLineCanvas - 성능 최적화</h3>
+<p>9개 스탠드 x 4채널 = 36개 데이터 스트림을 <strong>60fps Canvas 차트</strong>로 렌더링합니다.</p>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>최적화 기법</th><th>설명</th><th>효과</th></tr></thead>
+<tbody>
+  <tr><td>통합 RAF 루프</td><td>9개 캔버스를 단일 <code>requestAnimationFrame</code>에서 처리</td><td>RAF 오버헤드 9x 감소</td></tr>
+  <tr><td>Gradient 캐싱</td><td>LinearGradient 객체 캐시</td><td>GC pressure 감소</td></tr>
+  <tr><td>Binary Search Culling</td><td><code>lowerBound()</code>로 뷰포트 밖 포인트 제외</td><td>O(log n) 렌더링 최적화</td></tr>
+  <tr><td>Spline Interpolation</td><td>Catmull-Rom → Bezier 변환</td><td>부드러운 곡선</td></tr>
+  <tr><td>버퍼 재사용</td><td>길이 파라미터로 배열 재할당 방지</td><td>메모리 최소화</td></tr>
+  <tr><td>loop-based min/max</td><td>spread 연산 대신 for 루프</td><td>Stack overflow 방지</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="fe-stack">기술 스택</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>기술</th><th>상세</th><th>용도</th></tr></thead>
+<tbody>
+  <tr><td>Next.js</td><td>14 (Pages Router)</td><td>SSR, API Route, dynamic import</td></tr>
+  <tr><td>React</td><td>18</td><td>Hooks (useState, useCallback, useMemo, useRef, memo)</td></tr>
+  <tr><td>Tailwind CSS</td><td>3 + <code>sf-*</code> 팔레트</td><td>유틸리티 스타일링, Pretendard</td></tr>
+  <tr><td>Recharts</td><td>-</td><td>대시보드/분석 차트</td></tr>
+  <tr><td>Canvas 2D</td><td>-</td><td>실시간 스탠드 차트 (60fps)</td></tr>
+  <tr><td>framer-motion</td><td>-</td><td>전환 애니메이션</td></tr>
+  <tr><td>react-markdown</td><td>+ remark-gfm</td><td>에이전트 마크다운 렌더링</td></tr>
+  <tr><td>Lucide React</td><td>-</td><td>아이콘 시스템</td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ===== API ===== -->
+<section class="portfolio-section" id="sec-api">
+<h2>API 엔드포인트</h2>
+<p class="section-summary">7개 도메인별 라우터, 총 <strong>70+ 엔드포인트</strong>. REST + SSE 하이브리드 통신.</p>
+
+<div class="table-wrapper">
+<table>
+<thead><tr><th>도메인</th><th>엔드포인트</th><th>메서드</th><th>설명</th></tr></thead>
+<tbody>
+  <tr><td>인증</td><td><code>/api/login</code></td><td>POST</td><td>Basic Auth 로그인</td></tr>
+  <tr><td>헬스</td><td><code>/api/health</code></td><td>GET</td><td>시스템 상태 확인</td></tr>
+  <tr><td>설비</td><td><code>/api/equipment/:id</code></td><td>GET</td><td>설비 정보 조회</td></tr>
+  <tr><td>대시보드</td><td><code>/api/dashboard/summary</code></td><td>GET</td><td>종합 KPI</td></tr>
+  <tr><td>생산</td><td><code>/api/production/search</code></td><td>GET</td><td>생산라인 검색/분석</td></tr>
+  <tr><td>정비</td><td><code>/api/maintenance/auto-assign</code></td><td>POST</td><td>정비 자동배정</td></tr>
+  <tr><td>ML</td><td><code>/api/mlflow/models</code></td><td>GET</td><td>MLflow 모델 목록</td></tr>
+  <tr><td>ML</td><td><code>/api/models/retrain</code></td><td>POST</td><td>재학습 (SSE 스트림)</td></tr>
+  <tr><td>ML</td><td><code>/api/models/drift</code></td><td>GET</td><td>드리프트 모니터링</td></tr>
+  <tr><td>ML</td><td><code>/api/models/ab-test</code></td><td>POST</td><td>A/B 비교 테스트</td></tr>
+  <tr><td>ML</td><td><code>/api/models/ensemble</code></td><td>POST</td><td>앙상블 가중치</td></tr>
+  <tr><td>ML</td><td><code>/api/process/optimize</code></td><td>POST</td><td>P-PSO 공정 최적화</td></tr>
+  <tr><td>스탠드</td><td><code>/api/stands/status</code></td><td>GET</td><td>9 스탠드 실시간 상태</td></tr>
+  <tr><td>스탠드</td><td><code>/api/stands/control</code></td><td>GET</td><td>제어 현황</td></tr>
+  <tr><td>스탠드</td><td><code>/api/stands/mode</code></td><td>POST</td><td>운전모드 변경</td></tr>
+  <tr><td>자동화</td><td><code>/api/automation/maintenance/detect</code></td><td>POST</td><td>위험 설비 탐지 (SSE)</td></tr>
+  <tr><td>자동화</td><td><code>/api/automation/troubleshooting/generate</code></td><td>POST</td><td>FAQ 자동 생성</td></tr>
+  <tr><td>자동화</td><td><code>/api/automation/report/generate</code></td><td>POST</td><td>생산 리포트</td></tr>
+</tbody>
+</table>
+</div>
+
+<h3 id="api-sse">SSE 이벤트 프로토콜</h3>
+<div class="table-wrapper">
+<table>
+<thead><tr><th>이벤트</th><th>용도</th><th>페이로드</th></tr></thead>
+<tbody>
+  <tr><td><code>delta</code></td><td>텍스트 토큰 스트리밍</td><td><code>{ content: "..." }</code></td></tr>
+  <tr><td><code>tool_start</code></td><td>도구 호출 시작</td><td><code>{ tool: "...", args: {...} }</code></td></tr>
+  <tr><td><code>tool_end</code></td><td>도구 호출 완료</td><td><code>{ tool: "...", result: {...} }</code></td></tr>
+  <tr><td><code>done</code></td><td>응답 완료</td><td><code>{ usage: {...} }</code></td></tr>
+  <tr><td><code>error</code></td><td>오류 발생</td><td><code>{ message: "..." }</code></td></tr>
+</tbody>
+</table>
+</div>
+</section>
+
+<!-- ===== 성과 ===== -->
+<section class="portfolio-section" id="sec-results">
+<h2>성과 / 차별점</h2>
+<p class="section-summary">분절된 공정 관리 도구를 AI 통합 플랫폼으로 대체. LLM + ML 결합으로 운전자 의사결정 시간을 획기적으로 단축합니다.</p>
+
+<h3 id="result-achievements">주요 성과</h3>
+<ul>
+  <li><strong>10종 ML 모델 통합 운영</strong>: 분류, 회귀, 이상탐지, 클러스터링을 하나의 플랫폼에서 학습/배포/모니터링</li>
+  <li><strong>60fps 실시간 모니터링</strong>: 9 스탠드 x 4채널 = 36개 스트림, Canvas 기반 시각화</li>
+  <li><strong>자연어 설비 진단</strong>: "EQ0001 진단해줘" 한 마디로 분석 → 예측 → 정비 계획 자동 실행</li>
+  <li><strong>E2E 자동화 예지보전</strong>: 탐지 → SHAP 분석 → 정비 계획 → 조치의 완전 자동화</li>
+  <li><strong>SSE 실시간 UX</strong>: 재학습/예지보전/채팅 모두 SSE 스트리밍으로 즉각적 피드백</li>
+</ul>
+
+<h3 id="result-differentiators">차별점</h3>
+
+<h4>1. LLM + ML 하이브리드 AI</h4>
+<p>LLM의 자연어 이해 + ML의 예측 정확성. 자연어 질의 → 의도 파악 → ML 도구 호출 → 데이터 기반 분석 결과를 자연어로 설명합니다.</p>
+
+<h4>2. 물리 기반 시뮬레이션 엔진</h4>
+<p>Sin 룩업 테이블(1024 포인트), 시간 기반 연속 시뮬레이션으로 <strong>실제 사상압연 공정의 물리적 특성</strong>을 재현합니다. 스탠드 진행에 따른 전류 증가, 온도 감소 패턴을 반영합니다.</p>
+
+<h4>3. Dual-Layer 에이전트 도구 패턴</h4>
+<p><code>tool_*()</code> 구현 + <code>@tool</code> 래퍼 분리로 동일 로직을 API와 LLM에서 <strong>중복 없이 재사용</strong>합니다.</p>
+
+<h4>4. Canvas 60fps 차트 엔진</h4>
+<p>통합 RAF, Gradient 캐싱, Binary Search Culling 등 <strong>6가지 최적화</strong>로 대규모 스트림에서도 안정 60fps.</p>
+
+<h4>5. E2E 자동화 파이프라인</h4>
+<p>SHAP + KMeans + LLM 조합으로 <strong>운전자 개입 없는 완전 자동화</strong> 예지보전/트러블슈팅/리포트 워크플로우.</p>
+
+<h4>6. 프로덕션 레벨 최적화</h4>
+<ul>
+  <li>DataFrame dtype 자동 최적화 (메모리 30~50% 절감)</li>
+  <li>ML 모델 Lazy Loading</li>
+  <li>ThreadPoolExecutor 병렬 데이터 로딩</li>
+  <li>Page Visibility API 비활성 탭 폴링 중단</li>
+  <li><code>dynamic()</code> import 코드 분할 (SSR: false)</li>
+  <li>GZip 응답 압축</li>
+</ul>
+</section>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer class="portfolio-footer" id="sec-footer">
+<div class="footer-content">
+  <div class="footer-divider"></div>
+  <h4 class="footer-summary-title">Technology Stack</h4>
+  <div class="footer-tech-grid">
+    <div class="footer-tech-item"><strong>Frontend</strong><span>Next.js 14, React 18, Tailwind CSS, Recharts, Canvas 2D, framer-motion, react-markdown</span></div>
+    <div class="footer-tech-item"><strong>Backend</strong><span>FastAPI, Uvicorn, Pydantic, SSE (StreamingResponse), GZip Middleware</span></div>
+    <div class="footer-tech-item"><strong>ML / AI</strong><span>scikit-learn, XGBoost, LightGBM, SHAP, MLflow, Optuna, Isolation Forest, KMeans, DBSCAN</span></div>
+    <div class="footer-tech-item"><strong>Data / Infra</strong><span>Pandas, NumPy, joblib, PKL, Railway (Cloud), GitHub Pages</span></div>
+  </div>
+  <div class="footer-divider"></div>
+  <p class="footer-title"><strong>FMCS 사상압연 스마트팩토리 AI 플랫폼</strong></p>
+  <p class="footer-subtitle">AI Solution Developer Portfolio</p>
+  <div class="footer-buttons">
+    <a href="https://asngg.github.io/smartfactory-ai/" class="footer-btn footer-btn-primary">Live Demo</a>
+    <a href="#hero" class="footer-btn footer-btn-secondary">Top</a>
+  </div>
+  <br>
+  <p style="font-size:0.85em; color:#A0AEC0;">Built with Next.js 14 + FastAPI + scikit-learn + MLflow</p>
+</div>
+</footer>
+
+  </div>
+
+  <button id="back-to-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">&#8679;</button>
+
+</body>
+</html>
