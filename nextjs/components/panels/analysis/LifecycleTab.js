@@ -11,12 +11,12 @@ import {
 } from 'recharts';
 
 export default function LifecycleTab({ lifecycleData }) {
-  const [lifecycleTab, setLifecycleTab] = useState('retention');
+  const [lifecycleTab, setLifecycleTab] = useState('utilization');
 
   const weekKeys = useMemo(() => {
-    if (!lifecycleData?.retention?.length) return ['week0'];
+    if (!lifecycleData?.availability?.length) return ['week0'];
     const allKeys = new Set();
-    lifecycleData.retention.forEach(row => {
+    lifecycleData.availability.forEach(row => {
       Object.keys(row).forEach(k => {
         if (k.startsWith('week')) allKeys.add(k);
       });
@@ -37,7 +37,7 @@ export default function LifecycleTab({ lifecycleData }) {
       {/* 수명주기 분석 유형 선택 */}
       <div className="flex gap-2">
         {[
-          { key: 'retention', label: '가동률 추이', icon: Repeat },
+          { key: 'utilization', label: '가동률 추이', icon: Repeat },
           { key: 'rul', label: '설비 잔존수명', icon: Activity },
           { key: 'production_flow', label: '생산 공정별 처리 현황', icon: Target },
         ].map(tab => {
@@ -60,7 +60,7 @@ export default function LifecycleTab({ lifecycleData }) {
       </div>
 
       {/* 가동률 추이 히트맵 */}
-      {lifecycleTab === 'retention' && (
+      {lifecycleTab === 'utilization' && (
         <div className="rounded-3xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur">
           <div className="mb-4 text-sm font-black text-sf-brown">주간 설비 가동률 추이</div>
           <div className="overflow-x-auto">
@@ -76,7 +76,7 @@ export default function LifecycleTab({ lifecycleData }) {
                 </tr>
               </thead>
               <tbody>
-                {(lifecycleData.retention || []).map((row, idx) => (
+                {(lifecycleData.availability || []).map((row, idx) => (
                   <tr key={idx} className="border-b border-sf-orange/5">
                     <td className="py-3 px-3 font-semibold text-sf-brown">{row.cohort}</td>
                     {weekKeys.map((week) => (

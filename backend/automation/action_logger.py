@@ -26,10 +26,10 @@ _REPORT_HISTORY: List[Dict[str, Any]] = []
 _REPORT_LOCK = Lock()
 _REPORT_HISTORY_MAX_SIZE = 500
 
-# 리텐션 메시지 히스토리 (크기 제한)
-_RETENTION_HISTORY: List[Dict[str, Any]] = []
-_RETENTION_LOCK = Lock()
-_RETENTION_HISTORY_MAX_SIZE = 1000
+# 예지보전 액션 히스토리 (크기 제한)
+_MAINTENANCE_ACTION_HISTORY: List[Dict[str, Any]] = []
+_MAINTENANCE_ACTION_LOCK = Lock()
+_MAINTENANCE_ACTION_HISTORY_MAX_SIZE = 1000
 
 # 파이프라인 실행 추적 (크기 제한)
 _PIPELINE_RUNS: Dict[str, Dict[str, Any]] = {}
@@ -139,17 +139,17 @@ def get_report_history(limit: int = 20) -> List[Dict[str, Any]]:
         return sorted(_REPORT_HISTORY, key=lambda x: x.get("timestamp", 0), reverse=True)[:limit]
 
 
-# ── 리텐션 히스토리 ──
-def save_retention_action(action: Dict[str, Any]) -> None:
-    with _RETENTION_LOCK:
-        _RETENTION_HISTORY.append(action)
-        if len(_RETENTION_HISTORY) > _RETENTION_HISTORY_MAX_SIZE:
-            del _RETENTION_HISTORY[:len(_RETENTION_HISTORY) - _RETENTION_HISTORY_MAX_SIZE]
+# ── 예지보전 액션 히스토리 ──
+def save_maintenance_action(action: Dict[str, Any]) -> None:
+    with _MAINTENANCE_ACTION_LOCK:
+        _MAINTENANCE_ACTION_HISTORY.append(action)
+        if len(_MAINTENANCE_ACTION_HISTORY) > _MAINTENANCE_ACTION_HISTORY_MAX_SIZE:
+            del _MAINTENANCE_ACTION_HISTORY[:len(_MAINTENANCE_ACTION_HISTORY) - _MAINTENANCE_ACTION_HISTORY_MAX_SIZE]
 
 
-def get_retention_history(limit: int = 50) -> List[Dict[str, Any]]:
-    with _RETENTION_LOCK:
-        return sorted(_RETENTION_HISTORY, key=lambda x: x.get("timestamp", 0), reverse=True)[:limit]
+def get_maintenance_action_history(limit: int = 50) -> List[Dict[str, Any]]:
+    with _MAINTENANCE_ACTION_LOCK:
+        return sorted(_MAINTENANCE_ACTION_HISTORY, key=lambda x: x.get("timestamp", 0), reverse=True)[:limit]
 
 
 # ── 파이프라인 실행 추적 ──

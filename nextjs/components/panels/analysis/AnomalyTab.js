@@ -25,7 +25,7 @@ function SpcOutOfControlDot({ cx, cy, payload, dataKey, ucl, lcl }) {
   );
 }
 
-export default function AnomalyTab({ selectedUser, anomalyData, apiCall, auth, pieceSpc }) {
+export default function AnomalyTab({ selectedEquipmentLine, anomalyData, apiCall, auth, pieceSpc }) {
   const [spcData, setSpcData] = useState(null);
   const [spcDays, setSpcDays] = useState(30);
   const [spcLoading, setSpcLoading] = useState(false);
@@ -128,31 +128,31 @@ export default function AnomalyTab({ selectedUser, anomalyData, apiCall, auth, p
         )}
       </div>
       {/* 선택된 설비 이상탐지 결과 */}
-      {selectedUser?.model_predictions?.defect && (
+      {selectedEquipmentLine?.model_predictions?.defect && (
         <div className={`rounded-3xl border-2 p-5 shadow-sm backdrop-blur ${
-          selectedUser.model_predictions.defect.is_anomaly ? 'border-red-300 bg-red-50/80' : 'border-green-300 bg-green-50/80'
+          selectedEquipmentLine.model_predictions.defect.is_anomaly ? 'border-red-300 bg-red-50/80' : 'border-green-300 bg-green-50/80'
         }`}>
           <div className="flex items-center gap-2 mb-3">
-            <Shield size={18} className={selectedUser.model_predictions.defect.is_anomaly ? 'text-red-600' : 'text-green-600'} />
-            <span className="text-sm font-black text-sf-brown">{selectedUser.id} 이상 패턴 탐지 결과</span>
+            <Shield size={18} className={selectedEquipmentLine.model_predictions.defect.is_anomaly ? 'text-red-600' : 'text-green-600'} />
+            <span className="text-sm font-black text-sf-brown">{selectedEquipmentLine.id} 이상 패턴 탐지 결과</span>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="text-center">
               <div className="text-2xl font-black" style={{
-                color: selectedUser.model_predictions.defect.is_anomaly ? '#DC2626' : '#16A34A'
-              }}>{(selectedUser.model_predictions.defect.anomaly_score * 100).toFixed(1)}%</div>
+                color: selectedEquipmentLine.model_predictions.defect.is_anomaly ? '#DC2626' : '#16A34A'
+              }}>{(selectedEquipmentLine.model_predictions.defect.anomaly_score * 100).toFixed(1)}%</div>
               <div className="text-xs text-sf-brown/60">이상 점수</div>
             </div>
             <div className="text-center">
               <div className={`text-2xl font-black ${
-                selectedUser.model_predictions.defect.is_anomaly ? 'text-red-600' : 'text-green-600'
+                selectedEquipmentLine.model_predictions.defect.is_anomaly ? 'text-red-600' : 'text-green-600'
               }`}>
-                {selectedUser.model_predictions.defect.risk_level}
+                {selectedEquipmentLine.model_predictions.defect.risk_level}
               </div>
               <div className="text-xs text-sf-brown/60">판정</div>
             </div>
           </div>
-          <div className="mt-2 text-[10px] text-sf-brown/40">{selectedUser.model_predictions.defect.model}</div>
+          <div className="mt-2 text-[10px] text-sf-brown/40">{selectedEquipmentLine.model_predictions.defect.model}</div>
         </div>
       )}
       {!anomalyData ? (

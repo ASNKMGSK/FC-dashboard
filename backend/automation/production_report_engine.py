@@ -64,7 +64,7 @@ def collect_report_data() -> Dict[str, Any]:
                     else:
                         trends[f"{col}_wow_change_pct"] = 0.0
 
-    # -- SHOPS_DF: 총 설비 수, 라인별 분포 --
+    # -- EQUIPMENT_DF: 총 설비 수, 라인별 분포 --
     df = st.EQUIPMENT_DF
     if df is not None and not df.empty:
         kpi["total_equipment"] = len(df)
@@ -127,11 +127,11 @@ def collect_report_data() -> Dict[str, Any]:
         if cohort_col:
             latest_cohort = df[cohort_col].max()
             latest_rows = df[df[cohort_col] == latest_cohort]
-            retention_cols = [c for c in df.columns if c.startswith("month_") or c.startswith("m")]
-            if retention_cols:
+            availability_cols = [c for c in df.columns if c.startswith("month_") or c.startswith("m")]
+            if availability_cols:
                 kpi["latest_period"] = safe_str(latest_cohort)
                 kpi["availability_trend"] = {
-                    c: round(safe_float(latest_rows[c].mean()), 2) for c in retention_cols
+                    c: round(safe_float(latest_rows[c].mean()), 2) for c in availability_cols
                 }
 
     return {

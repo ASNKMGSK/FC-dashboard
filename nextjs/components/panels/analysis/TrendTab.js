@@ -8,7 +8,7 @@ import CustomTooltip from '@/components/common/CustomTooltip';
 import AnalysisEmptyState from './common/EmptyState';
 import {
   XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, LineChart, Line, AreaChart, Area
+  Tooltip, Legend, ResponsiveContainer, LineChart, Line, ComposedChart, Area
 } from 'recharts';
 
 export default function TrendTab({ trendData }) {
@@ -38,7 +38,7 @@ export default function TrendTab({ trendData }) {
             <div className="text-2xl font-black text-sf-brown">
               {typeof kpi.current === 'number' ? kpi.current.toLocaleString() : kpi.current}{kpi.name.includes('률') || kpi.name.includes('OEE') || kpi.name.includes('수율') ? '%' : ''}
             </div>
-            <div className="text-xs text-sf-brown/50">이전: {kpi.previous.toLocaleString()}</div>
+            <div className="text-xs text-sf-brown/50">이전: {kpi.previous != null ? kpi.previous.toLocaleString() : '-'}</div>
           </div>
         ))}
       </div>
@@ -71,7 +71,7 @@ export default function TrendTab({ trendData }) {
             <span className="text-sm font-black text-sf-brown">생산량 예측 (5일)</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={trendData.forecast || []}>
+            <ComposedChart data={trendData.forecast || []}>
               <defs>
                 <linearGradient id="trend-colorForecast" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#A78BFA" stopOpacity={0.3}/>
@@ -85,7 +85,7 @@ export default function TrendTab({ trendData }) {
               <Area type="monotone" dataKey="upper" name="상한" stroke="transparent" fill="#A78BFA" fillOpacity={0.2} />
               <Area type="monotone" dataKey="lower" name="하한" stroke="transparent" fill="transparent" />
               <Line type="monotone" dataKey="predicted_active_equipment" name="예측 생산량" stroke="#A78BFA" strokeWidth={2} strokeDasharray="5 5" dot={{ r: 4 }} />
-            </AreaChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
 

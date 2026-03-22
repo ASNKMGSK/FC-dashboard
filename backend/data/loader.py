@@ -107,14 +107,27 @@ def load_all_data():
                 st.logger.error(f"PKL 병렬 로드 실패: {e}")
 
     # LINE_ANALYTICS_DF 후처리: equipment_grade_encoded → equipment_grade 디코딩
-    if st.LINE_ANALYTICS_DF is not None and "equipment_grade_encoded" in st.LINE_ANALYTICS_DF.columns:
-        from core.constants import EQUIPMENT_GRADES
-        st.LINE_ANALYTICS_DF["equipment_grade"] = (
-            st.LINE_ANALYTICS_DF["equipment_grade_encoded"]
-            .map({i: t for i, t in enumerate(EQUIPMENT_GRADES)})
-            .fillna("A")
+    # 구 데이터는 "equipment_grade_encoded", 신규 데이터는 "grade_encoded" 컬럼명을 사용할 수 있으므로
+    # 두 컬럼명 모두 시도하는 fallback 처리
+    if st.LINE_ANALYTICS_DF is not None:
+        _la = st.LINE_ANALYTICS_DF
+        # 신규 컬럼명 우선, 없으면 구 컬럼명 fallback
+        _grade_enc_col = (
+            "equipment_grade_encoded" if "equipment_grade_encoded" in _la.columns else
+            "grade_encoded" if "grade_encoded" in _la.columns else
+            None
         )
-        st.logger.info("LINE_ANALYTICS_DF: equipment_grade 컬럼 디코딩 완료")
+        if _grade_enc_col is not None:
+            from core.constants import EQUIPMENT_GRADES
+            st.LINE_ANALYTICS_DF["equipment_grade"] = (
+                _la[_grade_enc_col]
+                .map({i: t for i, t in enumerate(EQUIPMENT_GRADES)})
+                .fillna("A")
+            )
+            st.logger.info(
+                "LINE_ANALYTICS_DF: equipment_grade 컬럼 디코딩 완료 (소스 컬럼: %s)",
+                _grade_enc_col,
+            )
 
     # 운영 로그
     st.OPERATION_LOGS_DF = load_data_safe(get_data_path("operation_logs.pkl"))
@@ -137,11 +150,7 @@ def load_all_data():
         "SHAP_EXPLAINER_FAILURE": "shap_explainer_failure.pkl",
         "YIELD_PREDICTION_MODEL": "model_yield_prediction.pkl",
         "EQUIPMENT_RUL_MODEL": "model_equipment_rul.pkl",
-        "OPERATOR_FEEDBACK_MODEL": "model_operator_feedback.pkl",
-        "PRODUCTION_FORECAST_MODEL": "model_production_forecast.pkl",
-        "PROCESS_ANOMALY_MODEL": "model_process_anomaly.pkl",
         "TFIDF_VECTORIZER": "tfidf_vectorizer.pkl",
-        "TFIDF_VECTORIZER_SENTIMENT": "tfidf_vectorizer_sentiment.pkl",
         "SCALER_CLUSTER": "scaler_cluster.pkl",
     }
 
@@ -262,7 +271,7 @@ def load_all_data():
     st.logger.info(f"  - 라이프사이클: {len(st.EQUIPMENT_LIFECYCLE_DF) if st.EQUIPMENT_LIFECYCLE_DF is not None else 0}개")
     # Lazy loading 모드에서는 파일 존재=대기(L), 파일 없음=X로 표시
     _model_status = lambda name: 'L(lazy)' if name in _available_models else 'X'
-    st.logger.info(f"  [ML 모델 (Lazy Loading, 10개)]")
+    st.logger.info(f"  [ML 모델 (Lazy Loading, 7개)]")
     st.logger.info(f"  - 설비 고장 예측: {_model_status('EQUIPMENT_FAILURE_MODEL')}")
     st.logger.info(f"  - 불량 탐지: {_model_status('DEFECT_DETECTION_MODEL')}")
     st.logger.info(f"  - 고장 자동 분류: {_model_status('FAULT_CLASSIFICATION_MODEL')}")
@@ -270,9 +279,6 @@ def load_all_data():
     st.logger.info(f"  - 수율 예측: {_model_status('YIELD_PREDICTION_MODEL')}")
     st.logger.info(f"  - 정비 응답 품질: {_model_status('MAINTENANCE_QUALITY_MODEL')}")
     st.logger.info(f"  - 설비 RUL: {_model_status('EQUIPMENT_RUL_MODEL')}")
-    st.logger.info(f"  - 작업자 피드백: {_model_status('OPERATOR_FEEDBACK_MODEL')}")
-    st.logger.info(f"  - 생산량 예측: {_model_status('PRODUCTION_FORECAST_MODEL')}")
-    st.logger.info(f"  - 공정 이상: {_model_status('PROCESS_ANOMALY_MODEL')}")
     st.logger.info(f"  - 생산 최적화: {'O' if st.PRODUCTION_OPTIMIZER_AVAILABLE else 'X'}")
     st.logger.info("=" * 50)
 
@@ -314,9 +320,6 @@ def load_selected_mlflow_models():
         "수율예측": "YIELD_PREDICTION_MODEL",
         "정비응답품질": "MAINTENANCE_QUALITY_MODEL",
         "설비RUL": "EQUIPMENT_RUL_MODEL",
-        "작업자피드백": "OPERATOR_FEEDBACK_MODEL",
-        "생산량예측": "PRODUCTION_FORECAST_MODEL",
-        "공정이상탐지": "PROCESS_ANOMALY_MODEL",
     }
 
     ml_mlruns = os.path.join(st.BASE_DIR, "ml", "mlruns")
@@ -400,12 +403,31 @@ def load_selected_mlflow_models():
 def build_caches():
     """캐시 데이터 구성 (groupby 벡터화)"""
     # 설비별 정비 서비스 매핑 — iterrows → groupby
+    # 구 데이터: service_name / service_type 컬럼 존재
+    # 신규 데이터: 해당 컬럼이 없을 수 있음 → 시뮬레이션 데이터로 fallback
     if st.MAINTENANCE_SERVICES_DF is not None and st.EQUIPMENT_DF is not None:
         svc_df = st.MAINTENANCE_SERVICES_DF.dropna(subset=["equipment_id"])
         cols = ["service_name", "service_type", "status", "description"]
         avail_cols = [c for c in cols if c in svc_df.columns]
-        for equipment_id, group in svc_df.groupby("equipment_id"):
-            st.EQUIPMENT_SERVICE_MAP[equipment_id] = group[avail_cols].to_dict("records")
+
+        # service_name / service_type 중 하나라도 없으면 컬럼 불일치 → 시뮬레이션 fallback
+        _key_cols_missing = not ("service_name" in svc_df.columns and "service_type" in svc_df.columns)
+        if _key_cols_missing:
+            st.logger.warning(
+                "MAINTENANCE_SERVICES_DF에 service_name/service_type 컬럼 없음 "
+                "(신규 스키마 불일치) — 시뮬레이션 서비스 데이터로 fallback"
+            )
+            _sim_services = [
+                {"service_name": "예방정비", "service_type": "PM", "status": "완료", "description": "정기 예방 정비"},
+                {"service_name": "긴급정비", "service_type": "EM", "status": "대기", "description": "긴급 고장 수리"},
+                {"service_name": "정기점검", "service_type": "IM", "status": "완료", "description": "주기적 설비 점검"},
+            ]
+            # 모든 설비에 동일한 시뮬레이션 서비스 매핑
+            for equipment_id in st.EQUIPMENT_DF["equipment_id"] if "equipment_id" in st.EQUIPMENT_DF.columns else []:
+                st.EQUIPMENT_SERVICE_MAP[equipment_id] = _sim_services
+        else:
+            for equipment_id, group in svc_df.groupby("equipment_id"):
+                st.EQUIPMENT_SERVICE_MAP[equipment_id] = group[avail_cols].to_dict("records")
         st.logger.info(f"설비 정비 서비스 캐시 구성: {len(st.EQUIPMENT_SERVICE_MAP)}개")
 
     # 설비별 성과 KPI 캐시 (O(1) 조회용)
@@ -469,9 +491,6 @@ def get_data_summary() -> dict:
             "yield_prediction": st.YIELD_PREDICTION_MODEL is not None or "YIELD_PREDICTION_MODEL" not in st._MODEL_LOAD_FAILED,
             "maintenance_quality": st.MAINTENANCE_QUALITY_MODEL is not None or "MAINTENANCE_QUALITY_MODEL" not in st._MODEL_LOAD_FAILED,
             "equipment_rul": st.EQUIPMENT_RUL_MODEL is not None or "EQUIPMENT_RUL_MODEL" not in st._MODEL_LOAD_FAILED,
-            "operator_feedback": st.OPERATOR_FEEDBACK_MODEL is not None or "OPERATOR_FEEDBACK_MODEL" not in st._MODEL_LOAD_FAILED,
-            "production_forecast": st.PRODUCTION_FORECAST_MODEL is not None or "PRODUCTION_FORECAST_MODEL" not in st._MODEL_LOAD_FAILED,
-            "process_anomaly": st.PROCESS_ANOMALY_MODEL is not None or "PROCESS_ANOMALY_MODEL" not in st._MODEL_LOAD_FAILED,
             "production_optimizer": st.PRODUCTION_OPTIMIZER_AVAILABLE,
         },
     }

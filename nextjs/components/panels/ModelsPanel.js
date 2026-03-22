@@ -98,7 +98,7 @@ const STAGE_LABELS = {
 };
 
 export default function ModelsPanel({ auth, apiCall }) {
-  const [mlflowData, setMlflowData] = useState([]);
+  const [mlflowData] = useState([]); // unused, kept for compat
   const [registeredModels, setRegisteredModels] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selecting, setSelecting] = useState(null);
@@ -109,8 +109,18 @@ export default function ModelsPanel({ auth, apiCall }) {
 
   // 새 기능 상태
   const [activeModel, setActiveModel] = useState('WeightedEnsemble');
-  const [learningRate, setLearningRate] = useState(0.05);
-  const [maxDepth, setMaxDepth] = useState(6);
+  const [tuningParams, setTuningParams] = useState({
+    learning_rate: true,
+    max_depth: true,
+    n_estimators: true,
+    min_child_weight: false,
+    subsample: false,
+    colsample_bytree: false,
+    reg_alpha: false,
+    reg_lambda: false,
+    num_leaves: false,
+    gamma: false,
+  });
   const [retraining, setRetraining] = useState(false);
   const [retrainProgress, setRetrainProgress] = useState(0);
   const [retrainStage, setRetrainStage] = useState('');
@@ -583,49 +593,44 @@ export default function ModelsPanel({ auth, apiCall }) {
           <h3 className="text-sm font-black text-sf-brown">하이퍼파라미터 튜닝</h3>
         </div>
         <div className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
-            {/* Learning Rate */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-sf-brown/60">Learning Rate</label>
-                <span className="text-xs font-mono font-bold text-sf-orange">{learningRate.toFixed(3)}</span>
-              </div>
-              <input
-                type="range"
-                min="0.001"
-                max="0.3"
-                step="0.001"
-                value={learningRate}
-                onChange={(e) => setLearningRate(parseFloat(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer accent-orange-500"
-                style={{ accentColor: '#f97316' }}
-              />
-              <div className="flex justify-between text-[10px] text-sf-brown/40 mt-1">
-                <span>0.001</span>
-                <span>0.3</span>
-              </div>
-            </div>
-            {/* Max Depth */}
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-sf-brown/60">Max Depth</label>
-                <span className="text-xs font-mono font-bold text-sf-orange">{maxDepth}</span>
-              </div>
-              <input
-                type="range"
-                min="3"
-                max="15"
-                step="1"
-                value={maxDepth}
-                onChange={(e) => setMaxDepth(parseInt(e.target.value))}
-                className="w-full h-2 rounded-full appearance-none cursor-pointer"
-                style={{ accentColor: '#f97316' }}
-              />
-              <div className="flex justify-between text-[10px] text-sf-brown/40 mt-1">
-                <span>3</span>
-                <span>15</span>
-              </div>
-            </div>
+          <p className="text-xs text-sf-brown/60 mb-4">Optuna가 선택된 파라미터를 자동 탐색합니다. 튜닝할 파라미터를 선택하세요.</p>
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-5">
+            {[
+              { key: 'learning_rate', label: 'Learning Rate', range: '0.001 ~ 0.3' },
+              { key: 'max_depth', label: 'Max Depth', range: '3 ~ 15' },
+              { key: 'n_estimators', label: 'N Estimators', range: '50 ~ 500' },
+              { key: 'min_child_weight', label: 'Min Child Weight', range: '1 ~ 10' },
+              { key: 'subsample', label: 'Subsample', range: '0.5 ~ 1.0' },
+              { key: 'colsample_bytree', label: 'Col Sample', range: '0.5 ~ 1.0' },
+              { key: 'reg_alpha', label: 'Reg Alpha (L1)', range: '0 ~ 10' },
+              { key: 'reg_lambda', label: 'Reg Lambda (L2)', range: '0 ~ 10' },
+              { key: 'num_leaves', label: 'Num Leaves', range: '15 ~ 127' },
+              { key: 'gamma', label: 'Gamma', range: '0 ~ 5' },
+            ].map(({ key, label, range }) => (
+              <label
+                key={key}
+                className={`flex items-start gap-2 p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                  tuningParams[key]
+                    ? 'border-sf-orange bg-sf-orange/5 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-sf-orange/30'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={tuningParams[key]}
+                  onChange={(e) => setTuningParams(prev => ({ ...prev, [key]: e.target.checked }))}
+                  className="mt-0.5 accent-orange-500"
+                />
+                <div>
+                  <span className="text-xs font-bold text-sf-brown block">{label}</span>
+                  <span className="text-[10px] text-sf-brown/40">{range}</span>
+                </div>
+              </label>
+            ))}
+          </div>
+          <div className="flex items-center gap-2 mb-1 text-[10px] text-sf-brown/50">
+            <Beaker size={12} />
+            <span>선택된 파라미터: {Object.values(tuningParams).filter(Boolean).length}개 / Optuna TPE Sampler · 50 trials</span>
           </div>
 
           {/* Start Retraining */}
@@ -723,10 +728,13 @@ export default function ModelsPanel({ auth, apiCall }) {
       {/* ============================================================ */}
       {/* 3. 앙상블 가중치 관리 */}
       {/* ============================================================ */}
-      <motion.div variants={cardVariants} initial="hidden" animate="visible" className="mb-6">
+      <motion.div variants={cardVariants} initial="hidden" animate="visible" className={`mb-6 ${activeModel === 'WeightedEnsemble' ? 'opacity-40 pointer-events-none' : ''}`}>
         <div className="flex items-center gap-2 mb-4">
           <Scale size={18} className="text-sf-orange" />
           <h3 className="text-sm font-black text-sf-brown">앙상블 가중치 관리</h3>
+          {activeModel === 'WeightedEnsemble' && (
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-200 text-gray-500 font-bold">AutoGluon 사용 시 비활성화</span>
+          )}
         </div>
         <div className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur">
           <div className="space-y-4 mb-5">
@@ -920,90 +928,91 @@ export default function ModelsPanel({ auth, apiCall }) {
       </motion.div>
 
       {/* ============================================================ */}
-      {/* 5. 버전 이력 테이블 */}
+      {/* 5. 모델별 버전 선택 */}
       {/* ============================================================ */}
       <motion.div variants={cardVariants} initial="hidden" animate="visible" className="mb-6">
         <div className="flex items-center gap-2 mb-4">
           <GitBranch size={18} className="text-sf-orange" />
-          <h3 className="text-sm font-black text-sf-brown">모델 버전 이력</h3>
+          <h3 className="text-sm font-black text-sf-brown">모델별 버전 관리</h3>
+          <span className="text-[10px] text-sf-brown/40 ml-1">각 모델의 Production 버전을 선택하세요</span>
         </div>
-        <div className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 shadow-sm backdrop-blur overflow-hidden">
+        <div className="space-y-3">
           {versionsLoading ? (
-            <div className="p-8 text-center text-sm text-sf-brown/50">로딩 중...</div>
+            <div className="p-8 text-center text-sm text-sf-brown/50 rounded-2xl border-2 border-sf-orange/20 bg-white/80">로딩 중...</div>
           ) : versions.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-sf-orange/10 bg-sf-beige/30">
-                    <th className="text-left py-3 px-4 text-sf-brown font-bold text-xs">버전</th>
-                    <th className="text-left py-3 px-4 text-sf-brown font-bold text-xs">모델명</th>
-                    <th className="text-left py-3 px-4 text-sf-brown font-bold text-xs">Stage</th>
-                    <th className="text-center py-3 px-4 text-sf-brown font-bold text-xs">RMSE</th>
-                    <th className="text-center py-3 px-4 text-sf-brown font-bold text-xs">R2</th>
-                    <th className="text-left py-3 px-4 text-sf-brown font-bold text-xs">생성일</th>
-                    <th className="text-left py-3 px-4 text-sf-brown font-bold text-xs">상태</th>
-                    <th className="text-center py-3 px-4 text-sf-brown font-bold text-xs">작업</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {versions.map((v, i) => (
-                    <tr key={`${v.model_name}-${v.version}-${i}`} className="border-b border-sf-orange/5 hover:bg-sf-beige/30 transition">
-                      <td className="py-3 px-4 font-semibold text-sf-brown">v{v.version}</td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <Brain size={14} className="text-sf-orange" />
-                          <span className="font-bold text-sf-brown">{v.model_name}</span>
+            Object.entries(
+              versions.reduce((groups, v) => {
+                const name = v.model_name || 'Unknown';
+                if (!groups[name]) groups[name] = [];
+                groups[name].push(v);
+                return groups;
+              }, {})
+            ).map(([modelName, modelVersions]) => {
+              const sorted = [...modelVersions].sort((a, b) => (b.version || 0) - (a.version || 0));
+              const production = sorted.find(v => v.stage === 'Production');
+              return (
+                <div key={modelName} className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 shadow-sm backdrop-blur overflow-hidden">
+                  <div className="flex items-center justify-between px-5 py-3 bg-sf-beige/30 border-b border-sf-orange/10">
+                    <div className="flex items-center gap-2">
+                      <Brain size={16} className="text-sf-orange" />
+                      <span className="text-sm font-black text-sf-brown">{modelName}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-sf-orange/10 text-sf-brown/60 font-bold">{sorted.length}개 버전</span>
+                    </div>
+                    {production && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-green-100 text-green-700 border border-green-300 font-bold">
+                        Production: v{production.version}
+                      </span>
+                    )}
+                  </div>
+                  <div className="divide-y divide-sf-orange/5">
+                    {sorted.map((v) => {
+                      const isProduction = v.stage === 'Production';
+                      return (
+                        <div
+                          key={`${v.model_name}-${v.version}`}
+                          className={`flex items-center gap-4 px-5 py-3 transition ${isProduction ? 'bg-green-50/50' : 'hover:bg-sf-beige/20'}`}
+                        >
+                          <div className="flex items-center gap-2 min-w-[60px]">
+                            <span className="text-xs font-bold text-sf-brown">v{v.version}</span>
+                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                              isProduction ? 'bg-green-100 text-green-700 border border-green-300' :
+                              v.stage === 'Staging' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
+                              'bg-gray-100 text-gray-500'
+                            }`}>
+                              {v.stage || 'Archived'}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-4 flex-1 text-xs text-sf-brown/60">
+                            <span className="font-mono">RMSE: <strong className="text-sf-brown">{v.metrics?.rmse?.toFixed(4) || '-'}</strong></span>
+                            <span className="font-mono">R²: <strong className="text-sf-brown">{v.metrics?.r2?.toFixed(4) || '-'}</strong></span>
+                            <span>{formatTimestamp(v.created_at)}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            {!isProduction && (
+                              <button
+                                onClick={() => handleSelectModel(v.model_name, v.version)}
+                                disabled={selecting === `${v.model_name}-${v.version}`}
+                                className="text-[10px] px-3 py-1.5 rounded-lg bg-sf-orange/10 text-sf-brown hover:bg-sf-orange/20 transition font-bold disabled:opacity-50"
+                              >
+                                {selecting === `${v.model_name}-${v.version}` ? '적용 중...' : 'Production 배포'}
+                              </button>
+                            )}
+                            {isProduction && (
+                              <span className="text-[10px] px-3 py-1.5 rounded-lg bg-green-100 text-green-700 font-bold">
+                                <CheckCircle size={10} className="inline mr-1" />현재 운영 중
+                              </span>
+                            )}
+                          </div>
                         </div>
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          v.stage === 'Production' ? 'bg-green-100 text-green-700 border border-green-300' :
-                          v.stage === 'Staging' ? 'bg-blue-100 text-blue-700 border border-blue-300' :
-                          'bg-gray-100 text-gray-500'
-                        }`}>
-                          {v.stage || 'Archived'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono text-xs text-sf-brown">
-                        {v.metrics?.rmse?.toFixed(4) || '-'}
-                      </td>
-                      <td className="py-3 px-4 text-center font-mono text-xs text-sf-brown">
-                        {v.metrics?.r2?.toFixed(4) || '-'}
-                      </td>
-                      <td className="py-3 px-4 text-xs text-sf-brown/60">
-                        {formatTimestamp(v.created_at)}
-                      </td>
-                      <td className="py-3 px-4">
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
-                          v.status === 'READY' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
-                        }`}>
-                          {v.status || 'READY'}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            className="text-[10px] px-2 py-1 rounded-lg border border-sf-orange/30 text-sf-brown hover:bg-sf-beige transition font-bold"
-                            title="Rollback"
-                          >
-                            <RotateCcw size={12} />
-                          </button>
-                          <button
-                            className="text-[10px] px-2 py-1 rounded-lg border border-sf-orange/30 text-sf-brown hover:bg-sf-beige transition font-bold"
-                            title="Export"
-                          >
-                            <Download size={12} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })
           ) : (
-            <div className="p-8 text-center text-sm text-sf-brown/50">
-              버전 이력이 없습니다.
+            <div className="p-8 text-center text-sm text-sf-brown/50 rounded-2xl border-2 border-sf-orange/20 bg-white/80">
+              모델 버전이 없습니다.
             </div>
           )}
         </div>
@@ -1198,94 +1207,6 @@ export default function ModelsPanel({ auth, apiCall }) {
         </div>
       )}
 
-      {/* ============================================================ */}
-      {/* 기존 유지: 실험 기록 */}
-      {/* ============================================================ */}
-      <div className="flex items-center gap-2 mb-4">
-        <FlaskConical size={18} className="text-sf-orange" />
-        <h3 className="text-sm font-black text-sf-brown">실험 기록</h3>
-      </div>
-
-      {mlflowData.length ? mlflowData.map((exp) => (
-        <div key={exp.experiment_id} className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur mb-4">
-          <div className="flex justify-between items-center mb-4">
-            <span className="font-bold text-sf-brown">{exp.name}</span>
-            <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${
-              exp.lifecycle_stage === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-            }`}>
-              {exp.lifecycle_stage}
-            </span>
-          </div>
-
-          {exp.runs && exp.runs.length > 0 ? (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b-2 border-sf-orange/10">
-                    <th className="text-left py-2 px-2 text-sf-brown font-bold text-xs">Run Name</th>
-                    <th className="text-left py-2 px-2 text-sf-brown font-bold text-xs">Status</th>
-                    <th className="text-left py-2 px-2 text-sf-brown font-bold text-xs">시작 시간</th>
-                    <th className="text-left py-2 px-2 text-sf-brown font-bold text-xs">Metrics</th>
-                    <th className="text-left py-2 px-2 text-sf-brown font-bold text-xs">Params</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {exp.runs.map((run) => (
-                    <tr key={run.run_id} className="border-b border-sf-orange/5 hover:bg-sf-beige/30 transition">
-                      <td className="py-3 px-2 font-semibold text-sf-brown">
-                        {run.run_name || run.run_id.slice(0, 8)}
-                      </td>
-                      <td className="py-3 px-2">
-                        <span className={`text-[10px] px-2 py-1 rounded-full font-bold ${
-                          run.status === 'FINISHED' ? 'bg-green-100 text-green-700' :
-                          run.status === 'RUNNING' ? 'bg-blue-100 text-blue-700 animate-pulse' :
-                          run.status === 'error' ? 'bg-red-100 text-red-700' :
-                          'bg-gray-100 text-gray-600'
-                        }`}>
-                          {run.status}
-                        </span>
-                      </td>
-                      <td className="py-3 px-2 text-sf-brown/60 text-xs">
-                        {formatTimestamp(run.start_time)}
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex flex-wrap gap-1">
-                          {Object.entries(run.metrics || {}).map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-sf-yellow/30 text-sf-brown px-2 py-0.5 rounded-full font-semibold">
-                              {k}: {typeof v === 'number' ? v.toFixed(4) : v}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                      <td className="py-3 px-2">
-                        <div className="flex flex-wrap gap-1">
-                          {Object.entries(run.params || {}).slice(0, 3).map(([k, v]) => (
-                            <span key={k} className="text-[10px] bg-sf-beige text-sf-brown/70 px-2 py-0.5 rounded-full">
-                              {k}: {v}
-                            </span>
-                          ))}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="text-sm text-sf-brown/50 py-4 text-center">
-              실험 기록이 없습니다.
-            </div>
-          )}
-        </div>
-      )) : (
-        <div className="rounded-2xl border-2 border-sf-orange/20 bg-white/80 p-8 text-center">
-          <FlaskConical size={32} className="mx-auto mb-3 text-sf-brown/30" />
-          <p className="text-sm text-sf-brown/60">MLflow 실험이 없습니다.</p>
-          <p className="text-xs text-sf-brown/40 mt-1">
-            노트북을 실행하여 모델을 학습하세요.
-          </p>
-        </div>
-      )}
     </div>
   );
 }

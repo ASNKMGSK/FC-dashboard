@@ -25,16 +25,16 @@ def production_lines_autocomplete(q: str = "", limit: int = 8, user: dict = Depe
         return error_response("생산라인 데이터 없음")
     q = q.strip().upper()
     if not q:
-        return {"status": "success", "users": []}
+        return {"status": "success", "results": []}
     df = st.PRODUCTION_LINES_DF
     id_col = "line_id" if "line_id" in df.columns else "line_id"
     mask = df[id_col].str.upper().str.contains(q, na=False)
-    _name_col = "line_name" if "line_name" in df.columns else ("equipment_name" if "equipment_name" in df.columns else ("shop_name" if "shop_name" in df.columns else None))
+    _name_col = "line_name" if "line_name" in df.columns else ("equipment_name" if "equipment_name" in df.columns else None)
     if _name_col:
         mask |= df[_name_col].str.upper().str.contains(q, na=False)
     matched = df[mask].head(limit)
-    users = [{"id": r[id_col], "name": r[id_col]} for r in matched[[id_col]].to_dict("records")]
-    return {"status": "success", "users": users}
+    results = [{"id": r[id_col], "name": r[id_col]} for r in matched[[id_col]].to_dict("records")]
+    return {"status": "success", "results": results}
 
 
 @router.get("/production-lines/analyze/{line_id}")
@@ -57,7 +57,7 @@ def get_segment_stats(user: dict = Depends(verify_credentials)):
     return tool_get_cluster_statistics()
 
 
-@router.get("/users/segments/{segment_name}/details")
+@router.get("/production-lines/segments/{segment_name}/details")
 def get_segment_details(segment_name: str, user: dict = Depends(verify_credentials)):
     try:
         if st.LINE_ANALYTICS_DF is None:
@@ -72,7 +72,7 @@ def get_segment_details(segment_name: str, user: dict = Depends(verify_credentia
         return json_sanitize({
             "status": "success", "segment": segment_name, "count": count,
             "percentage": round(count / max(total, 1) * 100, 1),
-            "avg_monthly_yield": int(seg["total_revenue"].mean()) if "total_revenue" in seg.columns else 0,
+            "avg_monthly_yield": int(seg["total_production_volume"].mean()) if "total_production_volume" in seg.columns else (int(seg["total_revenue"].mean()) if "total_revenue" in seg.columns else 0),
             "avg_equipment_count": int(seg["product_count"].mean()) if "product_count" in seg.columns else 0,
             "avg_work_order_count": int(seg["total_orders"].mean()) if "total_orders" in seg.columns else 0,
             "top_activities": [], "uptime_rate": None,

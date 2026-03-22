@@ -18,7 +18,7 @@
 ```
 backend/
 ├── main.py                          # FastAPI 앱 진입점 (lifespan, 미들웨어, 라우터)
-├── state.py                         # 전역 상태 싱글톤 (DataFrame 14개, ML 모델 11개)
+├── state.py                         # 전역 상태 싱글톤 (DataFrame 15개, ML 모델 7개)
 ├── requirements.txt
 │
 ├── api/                             # REST API 라우터
@@ -39,7 +39,7 @@ backend/
 │   └── tools.py                     # dual-layer 도구 (~30개 @tool 래퍼 + implementation)
 │
 ├── ml/                              # ML 모델 학습
-│   ├── train_models.py              # 10종 모델 학습 + 합성 데이터 생성 + MLflow 추적
+│   ├── train_models.py              # 7종 모델 학습 + 합성 데이터 생성 + MLflow 추적 + CSV→PKL 자동 변환 (15개 PKL 생성)
 │   ├── yield_model.py               # 수율 예측 보조 모듈
 │   └── process_optimizer.py         # P-PSO 공정 최적화
 │
@@ -277,9 +277,9 @@ tool_* implementation 함수
 | `CONSULTING` | 설비 종합진단 (4단계 워크플로우) | `analyze_equipment`, `predict_equipment_failure`, `optimize_process`, `generate_maintenance_plan` |
 | `ANALYSIS` | OEE·고장·가동률·트렌드 분석 | `get_failure_prediction`, `get_oee_prediction`, `get_trend_analysis`, `get_lifecycle_analysis` |
 | `EQUIPMENT` | 설비 분석·클러스터·불량탐지 | `analyze_equipment`, `detect_defect`, `get_equipment_cluster`, `predict_production_yield` |
-| `SHOP` | 설비 정보·라인·성과·공정 | `get_equipment_info`, `list_equipment`, `get_equipment_performance`, `get_dashboard_summary` |
+| `EQUIPMENT_LINE` | 설비 정보·라인·성과·공정 | `get_equipment_info`, `list_equipment`, `get_equipment_performance`, `get_dashboard_summary` |
 | `CS` | 정비 자동배정·품질검사·고장분류 | `auto_assign_maintenance`, `check_maintenance_quality`, `classify_fault` |
-| `RETENTION` | 고장예방·예지보전·위험설비 관리 | `get_at_risk_equipment`, `generate_maintenance_plan`, `execute_maintenance_action` |
+| `MAINTENANCE` | 고장예방·예지보전·위험설비 관리 | `get_at_risk_equipment`, `generate_maintenance_plan`, `execute_maintenance_action` |
 | `DASHBOARD` | 대시보드·전체 현황 | `get_dashboard_summary`, `get_maintenance_statistics`, `get_production_event_statistics` |
 | `PLATFORM` | 플랫폼 정책·기능·제조 용어 | `get_manufacturing_glossary` |
 | `GENERAL` | 일반 대화 | (도구 없음) |
@@ -337,7 +337,7 @@ def predict_equipment_failure(line_id: str) -> dict:
 
 ---
 
-## 🧠 ML 모델 10종
+## 🧠 ML 모델 7종
 
 모든 모델은 **Lazy Loading** 방식으로 첫 접근 시 `.pkl` 파일에서 로드되어 메모리에 캐시됩니다 (`state.get_model()`).
 
@@ -350,9 +350,6 @@ def predict_equipment_failure(line_id: str) -> dict:
 | 5 | `YIELD_PREDICTION_MODEL` | LGBMRegressor (n=200, depth=6, lr=0.05, leaves=31) / fallback: GradientBoostingRegressor | 회귀 | equipment_type_encoded, operating_hours, vibration, temperature, pressure, current, oee | MAE, R² |
 | 6 | `MAINTENANCE_QUALITY_MODEL` | RandomForestClassifier (n=150, depth=10, balanced) | 다중분류 | fault_type_encoded, severity_encoded, response_time, repair_time, is_repeat_issue, technician_experience | Accuracy, F1(macro) |
 | 7 | `EQUIPMENT_RUL_MODEL` | GradientBoostingRegressor (n=200, depth=5, lr=0.05) | 회귀 | operating_hours, vibration, temperature, pressure, current, fault_count | MAE, R² |
-| 8 | `OPERATOR_FEEDBACK_MODEL` | TfidfVectorizer + LogisticRegression | 이진분류 | 작업자 피드백 텍스트 (positive/negative) | Accuracy, F1(macro) |
-| 9 | `PRODUCTION_FORECAST_MODEL` | XGBRegressor (n=200, depth=5, lr=0.05) / fallback: GradientBoostingRegressor | 회귀 | week1~4_output, equipment_type_encoded, oee, cycle_time, is_overtime | MAE, R² |
-| 10 | `PROCESS_ANOMALY_MODEL` | DBSCAN(eps=1.5, min_samples=5) + StandardScaler | 밀도기반 이상탐지 | temperature, pressure, vibration, cycle_time, defect_rate | 클러스터 수, 이상(noise) 건수 |
 
 > `model_sensor_anomaly.pkl` (IsolationForest) 은 Guardian 전용으로 별도 관리됩니다 (PART 4).
 
@@ -369,11 +366,7 @@ _MODEL_FILE_MAP = {
     "YIELD_PREDICTION_MODEL":     "model_yield_prediction.pkl",
     "MAINTENANCE_QUALITY_MODEL":  "model_maintenance_quality.pkl",
     "EQUIPMENT_RUL_MODEL":        "model_equipment_rul.pkl",
-    "OPERATOR_FEEDBACK_MODEL":    "model_operator_feedback.pkl",
-    "PRODUCTION_FORECAST_MODEL":  "model_production_forecast.pkl",
-    "PROCESS_ANOMALY_MODEL":      "model_process_anomaly.pkl",
     "TFIDF_VECTORIZER":           "tfidf_vectorizer.pkl",
-    "TFIDF_VECTORIZER_SENTIMENT": "tfidf_vectorizer_sentiment.pkl",
     "SCALER_CLUSTER":             "scaler_cluster.pkl",
 }
 
@@ -568,18 +561,18 @@ OPERATION_MODE: str = "ai_auto"  # "ai_auto" | "manual"
 
 모든 모듈이 `import state as st`로 참조하는 단일 공유 상태 모듈입니다.
 
-### DataFrame 14개
+### DataFrame 15개
 
 | 변수명 | 설명 |
 |--------|------|
 | `EQUIPMENT_DF` | 설비 마스터 (ID, 유형, 등급, 위치, 상태) |
 | `EQUIPMENT_TYPES_DF` | 설비유형 마스터 (8종: CNC, 프레스, 사출, 용접, 조립, 도장, 검사, 포장) |
-| `MAINTENANCE_SERVICES_DF` | 정비 서비스 데이터 |
+| `MAINTENANCE_SERVICES_DF` | 정비 서비스 데이터 (신규 생성) |
 | `PRODUCTS_DF` | 부품/자재 데이터 |
 | `PRODUCTION_LINES_DF` | 생산라인 데이터 |
 | `OPERATION_LOGS_DF` | 운영 로그 |
 | `LINE_ANALYTICS_DF` | 생산라인 분석 (세그먼트명 포함) |
-| `EQUIPMENT_PERFORMANCE_DF` | 설비별 성과 KPI |
+| `EQUIPMENT_PERFORMANCE_DF` | 설비별 성과 KPI (OEE, 가동률, 수율, 신뢰도 포함) |
 | `DAILY_PRODUCTION_DF` | 일별 생산 지표 (OEE, 가동설비, 작업지시수) |
 | `MAINTENANCE_STATS_DF` | 정비 통계 |
 | `WORK_ORDERS_DF` | 작업지시 원문 (클러스터링용) |
@@ -600,9 +593,6 @@ OPERATION_MODE: str = "ai_auto"  # "ai_auto" | "manual"
 | `YIELD_PREDICTION_MODEL` | `model_yield_prediction.pkl` |
 | `MAINTENANCE_QUALITY_MODEL` | `model_maintenance_quality.pkl` |
 | `EQUIPMENT_RUL_MODEL` | `model_equipment_rul.pkl` |
-| `OPERATOR_FEEDBACK_MODEL` | `model_operator_feedback.pkl` |
-| `PRODUCTION_FORECAST_MODEL` | `model_production_forecast.pkl` |
-| `PROCESS_ANOMALY_MODEL` | `model_process_anomaly.pkl` |
 | `TFIDF_VECTORIZER` | `tfidf_vectorizer.pkl` |
 | `SCALER_CLUSTER` | `scaler_cluster.pkl` |
 

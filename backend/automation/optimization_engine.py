@@ -83,7 +83,7 @@ def _build_reasons(row, production_threshold: int, hours_threshold: int) -> List
             "value": f"{defect_rate}%",
         })
 
-    days_since_last = safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0)))
+    days_since_last = safe_int(row.get("days_since_last_maintenance", 0))
     if days_since_last <= 3:
         reasons.append({
             "factor": "활발한 가동 상태",
@@ -192,7 +192,7 @@ def get_optimization_candidates(limit: int = 20, use_ml_scoring: bool = False) -
                 "equipment_info": {
                     "operating_hours": safe_int(row.get("operating_hours", row.get("total_orders", 0))),
                     "production_volume": safe_int(row.get("production_volume", row.get("total_revenue", 0))),
-                    "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0))),
+                    "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
                     "defect_rate": safe_float(row.get("defect_rate", row.get("refund_rate", 0))),
                     "maintenance_requests": safe_int(row.get("cs_tickets", 0)),
                     "component_count": safe_int(row.get("product_count", 0)),
@@ -273,7 +273,7 @@ async def get_optimization_candidates_stream(limit: int = 20, use_ml_scoring: bo
             "equipment_info": {
                 "operating_hours": safe_int(row.get("operating_hours", row.get("total_orders", 0))),
                 "production_volume": safe_int(row.get("production_volume", row.get("total_revenue", 0))),
-                "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0))),
+                "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
                 "defect_rate": safe_float(row.get("defect_rate", row.get("refund_rate", 0))),
                 "maintenance_requests": safe_int(row.get("cs_tickets", 0)),
                 "component_count": safe_int(row.get("product_count", 0)),
@@ -373,7 +373,7 @@ def generate_optimization_recommendation(equipment_id: str) -> Dict:
     total_production = safe_int(row.get("production_volume", row.get("total_revenue", 0)))
     total_hours = safe_int(row.get("operating_hours", row.get("total_orders", 0)))
     defect_rate = safe_float(row.get("defect_rate", row.get("refund_rate", 0)))
-    days_since_maint = safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0)))
+    days_since_maint = safe_int(row.get("days_since_last_maintenance", 0))
 
     urgency = "high" if score >= 70 else "medium" if score >= 40 else "low"
 

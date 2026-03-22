@@ -12,7 +12,7 @@ import numpy as np
 import pandas as pd
 from core.constants import FEATURE_COLS_FAILURE, FEATURE_LABELS, EQUIPMENT_GRADES
 from core.utils import safe_str, safe_int, safe_float
-from automation.action_logger import log_action, save_retention_action, create_pipeline_run, update_pipeline_step, complete_pipeline_run
+from automation.action_logger import log_action, save_maintenance_action, create_pipeline_run, update_pipeline_step, complete_pipeline_run
 import state as st
 
 
@@ -78,7 +78,7 @@ def _shap_top_factors(shap_vals_row: "np.ndarray", feature_cols, top_n: int = 5)
 
 def _heuristic_score(row) -> float:
     """휴리스틱 고장 위험 점수 계산 (공통 로직)"""
-    days_since_last = safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0)))  # 마지막 정비 이후 일수
+    days_since_last = safe_int(row.get("days_since_last_maintenance", 0))  # 마지막 정비 이후 일수
     total_orders = safe_int(row.get("operating_hours", row.get("total_orders", 0)))  # 총 가동시간(시간)
     total_revenue = safe_int(row.get("production_volume", row.get("total_revenue", 0)))  # 총 생산량
     refund_rate = safe_float(row.get("defect_rate", row.get("refund_rate", 0)))  # 불량률
@@ -175,7 +175,7 @@ def get_at_risk_equipment(threshold: float = 0.6, limit: int = 20) -> List[Dict]
                     "equipment_info": {
                         "operating_hours": safe_int(row.get("operating_hours", row.get("total_orders", 0))),
                         "production_volume": safe_int(row.get("production_volume", row.get("total_revenue", 0))),
-                        "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0))),
+                        "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
                         "defect_rate": safe_float(row.get("defect_rate", row.get("refund_rate", 0))),
                         "component_count": safe_int(row.get("product_count", 0)),
                     },
@@ -201,7 +201,7 @@ def get_at_risk_equipment(threshold: float = 0.6, limit: int = 20) -> List[Dict]
 def _heuristic_at_risk(df: pd.DataFrame, threshold: float) -> List[Dict]:
     """ML 모델이 없을 때 휴리스틱으로 고장 위험 설비를 산출합니다 (벡터화)."""
     # 벡터화 휴리스틱 점수 계산
-    _days_col = "days_since_last_maintenance" if "days_since_last_maintenance" in df.columns else "days_since_last_login"
+    _days_col = "days_since_last_maintenance" if "days_since_last_maintenance" in df.columns else "days_since_install"
     _hours_col = "operating_hours" if "operating_hours" in df.columns else "total_orders"
     _vol_col = "production_volume" if "production_volume" in df.columns else "total_revenue"
     _defect_col = "defect_rate" if "defect_rate" in df.columns else "refund_rate"
@@ -233,7 +233,7 @@ def _heuristic_at_risk(df: pd.DataFrame, threshold: float) -> List[Dict]:
             "equipment_info": {
                 "operating_hours": safe_int(row.get("operating_hours", row.get("total_orders", 0))),
                 "production_volume": safe_int(row.get("production_volume", row.get("total_revenue", 0))),
-                "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0))),
+                "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
                 "defect_rate": safe_float(row.get("defect_rate", row.get("refund_rate", 0))),
                 "component_count": safe_int(row.get("product_count", 0)),
             },
@@ -244,7 +244,7 @@ def _heuristic_at_risk(df: pd.DataFrame, threshold: float) -> List[Dict]:
 def _default_factors(row) -> List[Dict]:
     """기본 고장 원인 목록을 생성합니다."""
     return [
-        {"factor": f"마지막 정비 {safe_int(row.get('days_since_last_maintenance', row.get('days_since_last_login', 0)))}일 전", "importance": 30},
+        {"factor": f"마지막 정비 {safe_int(row.get('days_since_last_maintenance', 0))}일 전", "importance": 30},
         {"factor": f"총 가동시간 {safe_int(row.get('operating_hours', row.get('total_orders', 0)))}시간", "importance": 25},
         {"factor": f"총 생산량 {safe_int(row.get('production_volume', row.get('total_revenue', 0))):,}개", "importance": 20},
         {"factor": f"불량률 {safe_float(row.get('defect_rate', row.get('refund_rate', 0)))}%", "importance": 15},
@@ -291,7 +291,7 @@ def generate_maintenance_plan(equipment_id: str) -> Dict:
 
     # MEDIUM/HIGH: 템플릿 기반 정비계획 생성
     operating_hours = safe_int(row.get("operating_hours", row.get("total_orders", 0)))
-    days_since_maint = safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0)))
+    days_since_maint = safe_int(row.get("days_since_last_maintenance", 0))
     defect_rate = safe_float(row.get("defect_rate", row.get("refund_rate", 0)))
 
     urgency = "high" if risk.upper() == "HIGH" else "medium"
@@ -320,8 +320,8 @@ def generate_maintenance_plan(equipment_id: str) -> Dict:
     }
 
 
-# 하위 호환성
-generate_retention_message = generate_maintenance_plan
+# 하위 호환성 (구 카페24 네이밍)
+generate_maintenance_plan_alias = generate_maintenance_plan
 
 
 def _analyze_single_equipment(row) -> Dict:
@@ -419,7 +419,7 @@ async def get_at_risk_equipment_stream(threshold: float = 0.6, limit: int = 20):
                     "equipment_info": {
                         "operating_hours": safe_int(row.get("operating_hours", row.get("total_orders", 0))),
                         "production_volume": safe_int(row.get("production_volume", row.get("total_revenue", 0))),
-                        "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", row.get("days_since_last_login", 0))),
+                        "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
                         "defect_rate": safe_float(row.get("defect_rate", row.get("refund_rate", 0))),
                         "component_count": safe_int(row.get("product_count", 0)),
                     },
@@ -536,7 +536,7 @@ def execute_maintenance_action(equipment_id: str, action_type: str) -> Dict:
         "timestamp": timestamp,
         "log_id": log_entry.get("id", ""),
     }
-    save_retention_action(maintenance_record)
+    save_maintenance_action(maintenance_record)
 
     st.logger.info(
         "MAINTENANCE_ACTION executed action_id=%s type=%s equipment=%s",
@@ -557,5 +557,5 @@ def execute_maintenance_action(equipment_id: str, action_type: str) -> Dict:
     }
 
 
-# 하위 호환성
-execute_retention_action = execute_maintenance_action
+# 하위 호환성 (구 카페24 네이밍)
+execute_maintenance_action_alias = execute_maintenance_action

@@ -26,7 +26,7 @@ router = APIRouter(prefix="/api", tags=["ml"])
 # 제조 도메인 모델명 (MODEL_STATE_MAP 키와 일치)
 MANUFACTURING_MODEL_NAMES = [
     "정비품질평가", "결함분류", "설비클러스터", "불량탐지", "설비고장예측",
-    "수율예측", "설비RUL", "생산량예측", "공정이상탐지", "작업자피드백",
+    "수율예측", "설비RUL",
 ]
 
 # 카페24 모델명 (감지 시 제조 시뮬레이션 데이터로 대체)
@@ -45,9 +45,6 @@ _MFG_MODEL_DESCRIPTIONS = {
     "설비고장예측": "설비 고장을 사전 예측하는 모델",
     "수율예측": "공정 파라미터 기반 수율 예측 회귀 모델",
     "설비RUL": "설비 잔존 수명(Remaining Useful Life) 예측 모델",
-    "생산량예측": "일별/주별 생산량 예측 시계열 모델",
-    "공정이상탐지": "공정 데이터 이상 패턴 실시간 탐지 모델",
-    "작업자피드백": "작업자 피드백 감성/중요도 분류 모델",
 }
 
 # 제조 모델별 하이퍼파라미터 튜닝 파라미터 (Optuna용)
@@ -59,22 +56,8 @@ _MFG_MODEL_TUNING_PARAMS = {
     "설비고장예측": {"n_estimators": [100, 400], "max_depth": [3, 8], "learning_rate": [0.01, 0.2]},
     "수율예측": {"n_estimators": [50, 300], "num_leaves": [10, 50], "learning_rate": [0.01, 0.3]},
     "설비RUL": {"n_estimators": [100, 500], "max_depth": [4, 10], "subsample": [0.6, 1.0]},
-    "생산량예측": {"n_estimators": [100, 400], "max_depth": [3, 8], "colsample_bytree": [0.5, 1.0]},
-    "공정이상탐지": {"contamination": [0.005, 0.05], "n_estimators": [100, 300], "max_features": [0.5, 1.0]},
-    "작업자피드백": {"max_features": [1000, 10000], "C": [0.1, 10.0], "max_iter": [100, 500]},
 }
 
-
-def _is_cafe24_model(name: str) -> bool:
-    """모델명이 카페24 도메인인지 확인"""
-    return name in _CAFE24_MODEL_NAMES
-
-
-def _has_only_cafe24_models(model_names: list) -> bool:
-    """조회된 모델이 모두 카페24 모델인지 확인"""
-    if not model_names:
-        return True
-    return all(_is_cafe24_model(n) for n in model_names)
 
 
 def _generate_manufacturing_models_data() -> list:
@@ -181,16 +164,15 @@ def get_mlflow_registered_models(user: dict = Depends(verify_credentials)):
     try:
         client = _get_mlflow_client()
         registered_models = client.search_registered_models()
-        model_names = [rm.name for rm in registered_models]
 
-        # 카페24 모델만 있거나 빈 결과 → 제조 시뮬레이션 데이터 반환
-        if _has_only_cafe24_models(model_names):
+        # 빈 결과 → 제조 시뮬레이션 데이터 반환
+        if not registered_models:
             return {"status": "success", "data": _generate_manufacturing_models_data()}
 
-        # 제조 모델만 필터링하여 반환
+        # 비제조 모델(구 카페24 잔재 등) 필터링 후 반환
         result = []
         for rm in registered_models:
-            if _is_cafe24_model(rm.name):
+            if rm.name in _CAFE24_MODEL_NAMES:
                 continue
             versions = []
             try:
@@ -222,7 +204,7 @@ def get_selected_models(user: dict = Depends(verify_credentials)):
 
 @router.post("/mlflow/models/select")
 def select_mlflow_model(req: ModelSelectRequest, user: dict = Depends(verify_credentials)):
-    MODEL_STATE_MAP = {"정비품질평가": "MAINTENANCE_QUALITY_MODEL", "결함분류": "FAULT_CLASSIFICATION_MODEL", "설비클러스터": "EQUIPMENT_CLUSTER_MODEL", "불량탐지": "DEFECT_DETECTION_MODEL", "설비고장예측": "EQUIPMENT_FAILURE_MODEL", "수율예측": "YIELD_PREDICTION_MODEL", "설비RUL": "EQUIPMENT_RUL_MODEL", "생산량예측": "PRODUCTION_FORECAST_MODEL", "공정이상탐지": "PROCESS_ANOMALY_MODEL", "작업자피드백": "OPERATOR_FEEDBACK_MODEL"}
+    MODEL_STATE_MAP = {"정비품질평가": "MAINTENANCE_QUALITY_MODEL", "결함분류": "FAULT_CLASSIFICATION_MODEL", "설비클러스터": "EQUIPMENT_CLUSTER_MODEL", "불량탐지": "DEFECT_DETECTION_MODEL", "설비고장예측": "EQUIPMENT_FAILURE_MODEL", "수율예측": "YIELD_PREDICTION_MODEL", "설비RUL": "EQUIPMENT_RUL_MODEL"}
     state_attr = MODEL_STATE_MAP.get(req.model_name)
     if not state_attr:
         return error_response(f"알 수 없는 모델: {req.model_name}. 지원 모델: {list(MODEL_STATE_MAP.keys())}")
@@ -271,14 +253,14 @@ def get_process_line_info(line_id: str, user: dict = Depends(verify_credentials)
         if st.PRODUCTION_LINES_DF is None:
             return error_response("생산라인 데이터 없음")
         sid = line_id.strip().upper()
-        _id_col = "line_id" if "line_id" in st.PRODUCTION_LINES_DF.columns else "seller_id"
+        _id_col = "line_id" if "line_id" in st.PRODUCTION_LINES_DF.columns else st.PRODUCTION_LINES_DF.columns[0]
         row = st.PRODUCTION_LINES_DF[st.PRODUCTION_LINES_DF[_id_col].str.upper() == sid]
         if row.empty:
             return error_response(f"생산라인 {line_id}을(를) 찾을 수 없습니다")
         line = row.iloc[0]
         equipment = []
         if st.EQUIPMENT_DF is not None:
-            _eq_id_col = "line_id" if "line_id" in st.EQUIPMENT_DF.columns else "seller_id"
+            _eq_id_col = "line_id" if "line_id" in st.EQUIPMENT_DF.columns else st.EQUIPMENT_DF.columns[0]
             line_equipment = st.EQUIPMENT_DF[st.EQUIPMENT_DF.get(_eq_id_col, pd.Series()).str.upper() == sid] if _eq_id_col in st.EQUIPMENT_DF.columns else pd.DataFrame()
             if line_equipment.empty and st.EQUIPMENT_PERFORMANCE_DF is not None:
                 equipment = st.EQUIPMENT_PERFORMANCE_DF.head(5).to_dict("records")
@@ -288,10 +270,8 @@ def get_process_line_info(line_id: str, user: dict = Depends(verify_credentials)
         for s in equipment:
             if "oee_rate" in s and "oee" not in s:
                 s["oee"] = float(s["oee_rate"])
-            elif "conversion_rate" in s and "oee" not in s:
-                s["oee"] = float(s["conversion_rate"])
         data = {
-            "line_id": line.get("line_id", line.get("seller_id", sid)),
+            "line_id": line.get("line_id", sid),
             "total_yield": float(line.get("total_revenue", 0)),
             "total_work_orders": int(line.get("total_orders", 0)),
             "equipment_count": int(line.get("product_count", 0)),
@@ -455,13 +435,9 @@ def get_model_versions(user: dict = Depends(verify_credentials)):
         registered = client.search_registered_models()
         if registered:
             model_names = [rm.name for rm in registered]
-            # 카페24 모델만 있으면 제조 시뮬레이션 반환
-            if _has_only_cafe24_models(model_names):
-                return {"status": "success", "data": _generate_manufacturing_versions_data()}
-
             versions = []
             for rm in registered:
-                if _is_cafe24_model(rm.name):
+                if rm.name in _CAFE24_MODEL_NAMES:
                     continue
                 all_v = client.search_model_versions(filter_string=f"name='{rm.name}'")
                 for v in sorted(all_v, key=lambda x: int(x.version), reverse=True):

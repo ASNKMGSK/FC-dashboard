@@ -146,7 +146,7 @@ def get_maintenance_history(
 ):
     """예방정비 조치 이력 조회"""
     try:
-        history = action_logger.get_retention_history(limit=limit)
+        history = action_logger.get_maintenance_action_history(limit=limit)
         return {"status": "success", "total": len(history), "history": history}
     except Exception as e:
         st.logger.error("MAINTENANCE_HISTORY_ERROR: %s", safe_str(e))

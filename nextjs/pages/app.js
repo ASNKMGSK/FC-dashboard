@@ -154,7 +154,7 @@ export default function AppPage() {
         const res = await apiCall({ endpoint: '/api/equipment', auth, timeoutMs: 30000 });
         if (!mounted) return;
 
-        const items = res?.equipment || res?.shops;
+        const items = res?.equipment;
         if (res?.status === 'success' && Array.isArray(items)) {
           setEquipmentList(items);
           if (!selectedEquipment && items.length > 0) {

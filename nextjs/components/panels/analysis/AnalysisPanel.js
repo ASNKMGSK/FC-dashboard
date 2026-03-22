@@ -43,7 +43,7 @@ export default function AnalysisPanel({ auth, apiCall }) {
   const [activeTab, setActiveTab] = useState('anomaly');
   const [dateRange, setDateRange] = useState('7d');
   const [loading, setLoading] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedEquipmentLine, setSelectedEquipmentLine] = useState(null);
   const [showDateDropdown, setShowDateDropdown] = useState(false);
 
   // API 데이터 상태
@@ -75,18 +75,18 @@ export default function AnalysisPanel({ auth, apiCall }) {
       .catch(() => console.log('생산라인 목록 API 실패'));
   }, [auth, apiCall]);
 
-  // SPC 2단계: 라인 선택 시 본 목록 로드 + selectedUser 자동 세팅
+  // SPC 2단계: 라인 선택 시 본 목록 로드 + selectedEquipmentLine 자동 세팅
   useEffect(() => {
-    if (!selectedLine) { setPieces([]); setSelectedPiece(null); setPieceSpc(null); setSelectedUser(null); return; }
+    if (!selectedLine) { setPieces([]); setSelectedPiece(null); setPieceSpc(null); setSelectedEquipmentLine(null); return; }
     // 본 목록 로드
     apiCall({ endpoint: `/api/stands/production-lines/${selectedLine}/pieces`, auth, timeoutMs: 10000 })
       .then(res => { if (res?.pieces) setPieces(res.pieces); })
       .catch(() => console.log('본 목록 API 실패'));
-    // 선택된 라인을 selectedUser로 매핑 (이상탐지/공정능력 탭에서 활용)
+    // 선택된 라인을 selectedEquipmentLine로 매핑 (이상탐지/공정능력 탭에서 활용)
     const lineInfo = productionLines.find(l => l.id === selectedLine);
     if (lineInfo) {
       // 즉시 기본 정보 표시 (API 응답 전)
-      setSelectedUser({
+      setSelectedEquipmentLine({
         id: lineInfo.id,
         segment: lineInfo.product_spec || 'H-beam',
         plan_tier: '가동중',
@@ -104,9 +104,9 @@ export default function AnalysisPanel({ auth, apiCall }) {
       const days = DAYS_MAP[dateRange] || 7;
       apiCall({ endpoint: `/api/production-lines/search?q=${encodeURIComponent(lineInfo.id)}&days=${days}`, auth, timeoutMs: 10000 })
         .then(res => {
-          if (res?.status === 'success' && res.user) {
-            const u = res.user;
-            setSelectedUser({
+          if (res?.status === 'success' && res.equipment) {
+            const u = res.equipment;
+            setSelectedEquipmentLine({
               id: u.id,
               segment: u.segment || lineInfo.product_spec || 'H-beam',
               plan_tier: u.plan_tier || '가동중',
@@ -190,11 +190,11 @@ export default function AnalysisPanel({ auth, apiCall }) {
         }
 
         // 설비 수명주기 처리
-        if (lifecycleRes?.status === 'success' && lifecycleRes.retention) {
+        if (lifecycleRes?.status === 'success' && lifecycleRes.availability) {
           setCohortData({
-            retention: lifecycleRes.retention,
+            availability: lifecycleRes.availability,
             rul_by_cohort: lifecycleRes.rul_by_cohort || [],
-            production_flow: lifecycleRes.production_flow || lifecycleRes.conversion || [],
+            production_flow: lifecycleRes.production_flow || [],
           });
         }
 
@@ -364,7 +364,7 @@ export default function AnalysisPanel({ auth, apiCall }) {
       )}
 
       {activeTab === 'anomaly' && (
-        <AnomalyTab selectedUser={selectedUser} anomalyData={anomalyData} apiCall={apiCall} auth={auth} pieceSpc={pieceSpc} />
+        <AnomalyTab selectedEquipmentLine={selectedEquipmentLine} anomalyData={anomalyData} apiCall={apiCall} auth={auth} pieceSpc={pieceSpc} />
       )}
 
       {activeTab === 'prediction' && (

@@ -11,7 +11,7 @@ export default function EquipmentSearchInput({
   onSearch,
   loading,
   quickSelectIds = DEFAULT_QUICK_IDS,
-  placeholder = '생산라인 ID 입력 (예: FM-LINE1)',
+  placeholder = '라인 ID 입력 (예: FM-LINE1)',
   buttonLabel = '검색',
   loadingLabel = '조회중...',
   inputRef,

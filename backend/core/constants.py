@@ -184,39 +184,6 @@ ML_MODEL_INFO = {
         },
         "description": "설비의 잔여 유효 수명(RUL)을 예측하여 교체 시기 판단 및 정비 전략 수립",
     },
-    "model_operator_feedback.pkl": {
-        "name": "작업자 피드백 분석 모델",
-        "type": "TF-IDF + Logistic Regression",
-        "target": "작업자 피드백 감성 분류 (긍정/부정/중립)",
-        "features": ["TF-IDF 벡터 (1000차원)"],
-        "metrics": {
-            "Accuracy": 0.85,
-            "F1_macro": 0.83,
-        },
-        "description": "작업자 피드백의 감성을 자동 분류하여 설비 품질 모니터링 및 트렌드 분석",
-    },
-    "model_production_forecast.pkl": {
-        "name": "생산량 예측 모델",
-        "type": "XGBoost Regressor",
-        "target": "설비별 다음주 생산량 예측",
-        "features": ["최근 4주 생산량", "사이클타임", "설비유형", "계절성", "정비 예정 여부", "작업자 수"],
-        "metrics": {
-            "R2": 0.70,
-            "MAE": 12,
-        },
-        "description": "설비별 생산량을 예측하여 생산 계획 및 자재 관리 지원",
-    },
-    "model_process_anomaly.pkl": {
-        "name": "공정 이상 탐지 모델",
-        "type": "DBSCAN Clustering",
-        "target": "공정 데이터 이상 패턴 탐지",
-        "features": ["생산량", "불량률", "사이클타임", "작업지시 건수", "설비 가동률"],
-        "metrics": {
-            "Eps": 0.5,
-            "Min_Samples": 5,
-        },
-        "description": "공정 데이터에서 이상 패턴을 탐지하여 공정 오류 및 품질 이슈 방지",
-    },
 }
 
 # 설비 클러스터 이름 (CSV segment_name 우선, 이건 fallback)

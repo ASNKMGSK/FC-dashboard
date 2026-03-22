@@ -22,17 +22,17 @@
     "grade_encoded": "설비등급"
   },
   "feature_importances": {
-    "operating_hours": 0.11855585720116495,
-    "fault_count": 0.3081176226211725,
-    "downtime_hours": 0.08916832171330145,
-    "vibration": 0.16670059967419298,
-    "temperature": 0.10163875951560115,
-    "pressure": 0.0969369000894018,
-    "current": 0.05784460835342552,
-    "days_since_install": 0.030819499498691023,
-    "grade_encoded": 0.030217831333048534
+    "operating_hours": 0.11945064199214978,
+    "fault_count": 0.3340434970465528,
+    "downtime_hours": 0.07180414809284798,
+    "vibration": 0.13052898238729385,
+    "temperature": 0.10981969714928139,
+    "pressure": 0.08277661633560814,
+    "current": 0.07611124258210675,
+    "days_since_install": 0.042135311116753,
+    "grade_encoded": 0.03332986329740638
   },
   "shap_available": true,
-  "model_accuracy": 0.9333333333333333,
-  "model_f1": 0.8666666666666667
+  "model_accuracy": 0.9666666666666667,
+  "model_f1": 0.9285714285714286
 }

@@ -11,9 +11,9 @@ from enum import Enum
 
 from core.utils import safe_str
 from agent.intent import (
-    ANALYSIS_KEYWORDS, PLATFORM_KEYWORDS, SHOP_KEYWORDS,
+    ANALYSIS_KEYWORDS, PLATFORM_KEYWORDS, EQUIPMENT_LINE_KEYWORDS,
     EQUIPMENT_KEYWORDS, CS_KEYWORDS, DASHBOARD_KEYWORDS, GENERAL_KEYWORDS,
-    RETENTION_KEYWORDS, CONSULTING_KEYWORDS,
+    MAINTENANCE_KEYWORDS, CONSULTING_KEYWORDS,
 )
 import state as st
 
@@ -29,10 +29,10 @@ class IntentCategory(str, Enum):
     CONSULTING = "consulting"   # 설비 종합진단 (4단계 워크플로우)
     ANALYSIS = "analysis"       # OEE, 생산량, 고장, 가동률, 라이프사이클, 트렌드
     PLATFORM = "platform"       # 플랫폼 정책, 기능, SOP, 매뉴얼
-    SHOP = "shop"               # 설비 정보, 라인, 성과, 생산량
-    EQUIPMENT = "equipment"     # 설비 분석, 클러스터, 불량 탐지
-    CS = "cs"                   # 정비 자동배정, 품질 검사, 고장 분류
-    RETENTION = "retention"     # 고장 예방, 예지보전, 위험 설비 관리
+    EQUIPMENT_LINE = "equipment_line"  # 설비 정보, 라인, 성과, 생산량
+    EQUIPMENT = "equipment"           # 설비 분석, 클러스터, 불량 탐지
+    CS = "cs"                         # 정비 자동배정, 품질 검사, 고장 분류
+    MAINTENANCE = "maintenance"       # 고장 예방, 예지보전, 위험 설비 관리
     DASHBOARD = "dashboard"     # 대시보드, 전체 현황
     GENERAL = "general"         # 일반 대화, 인사
 
@@ -56,7 +56,7 @@ CATEGORY_TOOLS = {
     IntentCategory.PLATFORM: [
         "get_manufacturing_glossary",
     ],
-    IntentCategory.SHOP: [
+    IntentCategory.EQUIPMENT_LINE: [
         "get_equipment_info",
         "list_equipment",
         "get_equipment_services",
@@ -86,7 +86,7 @@ CATEGORY_TOOLS = {
         "get_maintenance_statistics",
         "classify_fault",
     ],
-    IntentCategory.RETENTION: [
+    IntentCategory.MAINTENANCE: [
         "get_at_risk_equipment",
         "generate_maintenance_plan",
         "execute_maintenance_action",
@@ -127,8 +127,8 @@ def _keyword_classify(text: str) -> Optional[IntentCategory]:
         return IntentCategory.EQUIPMENT
 
     # 0.5. 예지보전 키워드 (ANALYSIS보다 우선 - 고장 예방/위험 설비 관리)
-    if any(kw in t for kw in RETENTION_KEYWORDS):
-        return IntentCategory.RETENTION
+    if any(kw in t for kw in MAINTENANCE_KEYWORDS):
+        return IntentCategory.MAINTENANCE
 
     # 1. 분석 키워드 (설비 ID 없는 일반 분석)
     if any(kw in t for kw in ANALYSIS_KEYWORDS):
@@ -138,9 +138,9 @@ def _keyword_classify(text: str) -> Optional[IntentCategory]:
     if any(kw in t for kw in EQUIPMENT_KEYWORDS):
         return IntentCategory.EQUIPMENT
 
-    # 3. 설비/라인 관련 (성과, 정보, 공정)
-    if any(kw in t for kw in SHOP_KEYWORDS):
-        return IntentCategory.SHOP
+    # 3. 설비/라인 정보 관련 (성과, 정보, 공정)
+    if any(kw in t for kw in EQUIPMENT_LINE_KEYWORDS):
+        return IntentCategory.EQUIPMENT_LINE
 
     # 4. 정비 관련
     if any(kw in t for kw in CS_KEYWORDS):

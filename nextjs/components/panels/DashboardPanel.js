@@ -944,7 +944,7 @@ export default function DashboardPanel({ auth, apiCall }) {
                     <div key={idx} className="flex items-center gap-2 text-sm text-red-700">
                       <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
                       <span className="font-semibold">
-                        설비 {alert.equipment_id || alert.user_id}: {alert.type} 감지 — 즉시 점검 필요
+                        설비 {alert.equipment_id}: {alert.type} 감지 — 즉시 점검 필요
                       </span>
                     </div>
                   ))}
@@ -1015,7 +1015,7 @@ export default function DashboardPanel({ auth, apiCall }) {
                       <div className={`w-2 h-2 rounded-full ${colors.dot} ${colors.animate ? 'animate-pulse' : ''}`} />
                       <div className="flex-1">
                         <div className="text-sm font-bold text-sf-brown">{alert.type}</div>
-                        <div className="text-xs text-sf-brown/70">{alert.equipment_id || alert.user_id} - {alert.detail}</div>
+                        <div className="text-xs text-sf-brown/70">{alert.equipment_id} - {alert.detail}</div>
                       </div>
                       <span className="text-[10px] text-sf-brown/50">{alert.time_ago}</span>
                     </div>

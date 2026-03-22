@@ -32,7 +32,6 @@ from sklearn.ensemble import (
     GradientBoostingRegressor,
     GradientBoostingClassifier,
 )
-from sklearn.linear_model import LogisticRegression
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import (
     classification_report,
@@ -42,7 +41,7 @@ from sklearn.metrics import (
     mean_absolute_error,
     r2_score,
 )
-from sklearn.cluster import KMeans, DBSCAN
+from sklearn.cluster import KMeans
 import joblib
 import warnings
 
@@ -80,13 +79,6 @@ try:
     LIGHTGBM_AVAILABLE = True
 except ImportError:
     LIGHTGBM_AVAILABLE = False
-
-# XGBoost (생산량 예측용)
-try:
-    import xgboost as xgb
-    XGBOOST_AVAILABLE = True
-except ImportError:
-    XGBOOST_AVAILABLE = False
 
 # SHAP
 try:
@@ -242,56 +234,6 @@ FAULT_REPORT_TEMPLATES = {
         "공압 센서 오작동으로 부품 감지가 안 됩니다.",
     ],
 }
-
-# 작업자 피드백 텍스트 (감성분석 모델용)
-FEEDBACK_TEMPLATES_POSITIVE = [
-    "설비 상태가 좋아서 작업이 순조롭습니다. 가동률도 높아요.",
-    "최근 정비 후 진동이 많이 줄었습니다. 잘 조치해주셨습니다.",
-    "새로운 작업 표준서 덕분에 불량률이 크게 감소했습니다.",
-    "안전 교육 후 작업 환경이 개선되었습니다. 감사합니다.",
-    "자동화 라인 도입 후 생산성이 크게 향상되었습니다.",
-    "공구 관리 시스템이 편리해져서 교체 시간이 단축되었습니다.",
-    "설비 정비 일정이 잘 관리되어 고장이 줄었습니다.",
-    "작업 환경 개선(조명, 환기)으로 집중도가 높아졌습니다.",
-    "품질 검사 장비 교체 후 정확도가 향상되었습니다.",
-    "신규 지그 도입으로 셋업 시간이 절반으로 줄었습니다.",
-    "에어컨 설치 후 여름철 작업 환경이 좋아졌습니다.",
-    "안전 보호구 교체 후 작업이 편해졌습니다.",
-    "설비 이상 조기 경보 시스템이 매우 유용합니다.",
-    "라인 밸런싱 조정으로 대기 시간이 줄었습니다.",
-    "MES 시스템 도입으로 실적 입력이 간편해졌습니다.",
-]
-
-FEEDBACK_TEMPLATES_NEGATIVE = [
-    "설비 고장이 잦아서 생산 목표 달성이 어렵습니다.",
-    "부품 교체를 요청했는데 조달이 너무 늦습니다.",
-    "안전 장치가 자주 오작동하여 작업이 중단됩니다.",
-    "작업장 온도가 너무 높아 집중하기 어렵습니다.",
-    "야간 교대 시 조명이 부족합니다. 개선 요청합니다.",
-    "불량률이 높아서 재작업이 많습니다. 원인 분석 필요.",
-    "정비 요청 후 응답이 너무 느립니다.",
-    "공구 마모가 심한데 교체 주기가 너무 깁니다.",
-    "소음이 너무 심해서 귀마개를 해도 힘듭니다.",
-    "자재 입고가 지연되어 라인 가동이 중단됩니다.",
-    "설비 매뉴얼이 구버전이라 참고하기 어렵습니다.",
-    "쿨런트 관리가 안 되어 가공면이 거칠어졌습니다.",
-    "측정 장비 교정이 안 되어 있어 품질 이슈가 있습니다.",
-    "교대 인수인계가 부실하여 문제가 반복됩니다.",
-    "안전 통로가 자재로 막혀있어 위험합니다.",
-]
-
-FEEDBACK_TEMPLATES_NEUTRAL = [
-    "오늘도 정상 가동 중입니다. 특별한 이상 없습니다.",
-    "생산 실적은 목표치와 비슷합니다. 평균적인 상태입니다.",
-    "설비 상태 보통입니다. 큰 문제는 없으나 개선 여지 있습니다.",
-    "작업 환경은 보통입니다. 특별히 좋지도 나쁘지도 않습니다.",
-    "금일 교대 작업 평이하게 진행 중입니다.",
-    "정기 점검 결과 특이사항 없습니다.",
-    "생산 속도는 표준 수준입니다. 무난합니다.",
-    "자재 입고 일정대로 진행 중입니다.",
-    "품질 검사 합격률 정상 범위입니다.",
-    "안전 점검 완료. 지적 사항 없습니다.",
-]
 
 # 플랫폼 문서 데이터 (용어집/가이드)
 PLATFORM_DOCS_DATA = [
@@ -501,6 +443,58 @@ print(f"  - 센서 데이터: {len(sensor_df)}건")
 
 
 # --------------------------------------------------------------------------
+# 2.4.1 정비 서비스 데이터 (maintenance_services.csv)
+# --------------------------------------------------------------------------
+print("\n[2.4.1] 정비 서비스 데이터 생성")
+
+SERVICE_TYPES = ["정기점검", "긴급수리", "예방정비", "부품교체", "오버홀"]
+SERVICE_TYPE_WEIGHTS = [0.30, 0.20, 0.25, 0.15, 0.10]
+SERVICE_STATUSES = ["완료", "진행중", "대기", "예정"]
+SERVICE_STATUS_WEIGHTS = [0.55, 0.15, 0.15, 0.15]
+
+SERVICE_NAME_TEMPLATES = {
+    "정기점검": ["월간 정기점검", "분기 종합점검", "주간 점검", "일상 점검"],
+    "긴급수리": ["긴급 고장 수리", "비상 정비", "긴급 부품 교체"],
+    "예방정비": ["예방 오일 교체", "예방 필터 교체", "예방 벨트 점검", "예방 베어링 점검"],
+    "부품교체": ["소모품 교체", "마모 부품 교체", "손상 부품 교체", "정기 부품 갱신"],
+    "오버홀": ["연간 오버홀", "전면 분해 정비", "주요 컴포넌트 재조립"],
+}
+
+SERVICE_DESCRIPTIONS = {
+    "정기점검": "설비 전반의 상태를 점검하고 이상 여부를 확인합니다.",
+    "긴급수리": "돌발 고장으로 인한 긴급 수리를 실시합니다.",
+    "예방정비": "고장 예방을 위한 선제적 정비를 수행합니다.",
+    "부품교체": "수명이 다한 부품을 신품으로 교체합니다.",
+    "오버홀": "설비를 완전 분해하여 전면 점검 및 수리합니다.",
+}
+
+maint_services_data = []
+svc_idx = 0
+for _, eq in equipment_df.iterrows():
+    n_services = rng.integers(2, 8)
+    for _ in range(n_services):
+        svc_idx += 1
+        svc_type = rng.choice(SERVICE_TYPES, p=SERVICE_TYPE_WEIGHTS)
+        svc_name = rng.choice(SERVICE_NAME_TEMPLATES[svc_type])
+        svc_status = rng.choice(SERVICE_STATUSES, p=SERVICE_STATUS_WEIGHTS)
+        svc_days_ago = int(rng.integers(0, 180))
+        svc_created = (reference_date - timedelta(days=svc_days_ago)).strftime("%Y-%m-%d")
+
+        maint_services_data.append({
+            "service_id": f"SVC{svc_idx:06d}",
+            "equipment_id": eq["equipment_id"],
+            "service_name": svc_name,
+            "service_type": svc_type,
+            "status": svc_status,
+            "description": SERVICE_DESCRIPTIONS[svc_type],
+            "created_at": svc_created,
+        })
+
+maint_services_df = pd.DataFrame(maint_services_data)
+print(f"  - 정비 서비스: {len(maint_services_df)}건")
+
+
+# --------------------------------------------------------------------------
 # 2.5 설비 분석 데이터 (equipment_analytics.csv)
 # --------------------------------------------------------------------------
 print("\n[2.5] 설비 분석 데이터 생성")
@@ -697,26 +691,33 @@ print(f"  - 운영 로그: {len(op_logs_df)}건")
 print("\n[2.9] 일별 공장 지표 생성")
 
 daily_metrics_data = []
-base_running = 225
-base_output = 85000
+base_running = 3            # FMCS 3개 사상압연 라인
+base_output = 1200          # 일일 총 생산량 (본)
 for day in range(90):
     d = reference_date - timedelta(days=89 - day)
-    weekend = 0.60 if d.weekday() >= 5 else 1.0  # 주말 가동률 감소
-    running = int(base_running * weekend * rng.uniform(0.90, 1.05))
+    weekend = 0.67 if d.weekday() >= 5 else 1.0  # 주말: 2/3 라인 가동
+    running = max(1, int(base_running * weekend * rng.uniform(0.90, 1.05)))
     total_output = int(base_output * weekend * rng.uniform(0.85, 1.15))
-    total_defects = int(total_output * rng.uniform(0.01, 0.05))
+    total_defects = int(total_output * rng.uniform(0.01, 0.04))
+    total_work_orders = int(rng.integers(1, 8))
+    maintenance_completed = int(rng.integers(1, min(6, total_work_orders + 1)))
+    cs_open = int(rng.integers(0, 5))
+    cs_resolved = int(rng.integers(0, cs_open + 1))
     daily_metrics_data.append({
         "date": d.strftime("%Y-%m-%d"),
-        "running_equipment": running,
+        "active_equipment": running,
         "total_output": total_output,
         "total_defects": total_defects,
-        "avg_oee": round(float(rng.uniform(75, 95)), 1),
-        "avg_cycle_time": round(float(rng.uniform(35, 55)), 1),
-        "maintenance_requests": int(rng.integers(5, 30)),
-        "maintenance_completed": int(rng.integers(3, 25)),
-        "alarm_count": int(rng.integers(2, 20)),
-        "energy_consumption_kwh": int(running * rng.uniform(50, 80)),
-        "avg_yield_rate": round(float(rng.uniform(92, 99)), 1),
+        "daily_oee": round(float(rng.uniform(78, 96)), 1),
+        "avg_cycle_time": round(float(rng.uniform(40, 50)), 1),   # 초/본
+        "total_work_orders": total_work_orders,
+        "maintenance_completed": maintenance_completed,
+        "alarm_count": int(rng.integers(0, 8)),
+        "energy_consumption_kwh": int(running * rng.uniform(800, 1200)),  # 라인당 800~1200kWh
+        "avg_yield_rate": round(float(rng.uniform(93, 99)), 1),
+        "cs_tickets_open": cs_open,
+        "cs_tickets_resolved": cs_resolved,
+        "new_registrations": 0,   # FMCS에서 신규 설비 등록은 거의 없음
     })
 
 daily_metrics_df = pd.DataFrame(daily_metrics_data)
@@ -730,12 +731,18 @@ print("\n[2.10] 정비 통계 데이터 생성")
 
 maint_stats_data = []
 for ft in FAULT_TYPES:
+    total_cases = int(rng.integers(50, 500))
     maint_stats_data.append({
         "fault_type": ft,
-        "total_cases": int(rng.integers(50, 500)),
+        "total_cases": total_cases,
         "avg_repair_hours": round(float(rng.uniform(1, 24)), 1),
         "avg_downtime_hours": round(float(rng.uniform(2, 48)), 1),
         "resolution_rate": round(float(np.clip(rng.normal(0.92, 0.05), 0.70, 1.0)), 4),
+        # API가 기대하는 추가 컬럼
+        "category": ft,                             # fault_type 복사
+        "total_tickets": total_cases,               # total_cases 복사
+        "satisfaction_score": round(float(np.clip(rng.uniform(3.5, 4.8), 3.5, 4.8)), 2),
+        "avg_quality": round(float(np.clip(rng.uniform(70, 95), 70, 95)), 1),
     })
 maint_stats_df = pd.DataFrame(maint_stats_data)
 print(f"  - 정비 통계: {len(maint_stats_df)}개 유형")
@@ -746,19 +753,24 @@ print(f"  - 정비 통계: {len(maint_stats_df)}개 유형")
 # --------------------------------------------------------------------------
 print("\n[2.11] 이상 설비 상세 데이터 생성")
 
-ANOMALY_TYPES = ["과진동", "과열", "압력이상", "전류과부하"]
+ANOMALY_TYPES = ["과진동", "과열", "압력이상", "전류과부하", "롤마모", "냉각수이상"]
 anomaly_data = []
-anomaly_equipment = rng.choice(
-    equipment_df["equipment_id"].values, size=min(15, len(equipment_df)), replace=False
-)
-for eq_id in anomaly_equipment:
-    anomaly_data.append({
-        "equipment_id": eq_id,
-        "anomaly_score": round(float(rng.uniform(0.6, 1.0)), 4),
-        "anomaly_type": rng.choice(ANOMALY_TYPES),
-        "detected_date": (reference_date - timedelta(days=int(rng.integers(0, 30)))).strftime("%Y-%m-%d"),
-        "details": f"이상 패턴 감지: {rng.choice(['진동값 급증', '온도 이상 상승', '압력 불안정', '전류 과부하'])}",
-    })
+# 90일간 이상 이벤트 생성 (평균 1~2건/일)
+for day_offset in range(90):
+    n_events = int(rng.integers(0, 4))  # 0~3건/일
+    for _ in range(n_events):
+        eq_id = rng.choice(equipment_df["equipment_id"].values)
+        atype = rng.choice(ANOMALY_TYPES)
+        score = round(float(rng.uniform(0.4, 1.0)), 4)
+        severity = "high" if score > 0.8 else "medium" if score > 0.6 else "low"
+        anomaly_data.append({
+            "equipment_id": eq_id,
+            "anomaly_score": score,
+            "severity": severity,
+            "anomaly_type": atype,
+            "detected_date": (reference_date - timedelta(days=day_offset)).strftime("%Y-%m-%d"),
+            "details": f"이상 패턴 감지: {rng.choice(['진동값 급증', '온도 이상 상승', '압력 불안정', '전류 과부하', '롤 표면 마모', '냉각수 온도 이탈'])}",
+        })
 anomaly_detail_df = pd.DataFrame(anomaly_data)
 print(f"  - 이상 설비 상세: {len(anomaly_detail_df)}건")
 
@@ -774,12 +786,16 @@ for m in uptime_months:
     w1 = round(float(np.clip(rng.normal(92, 3), 75, 99)), 1)
     w2 = round(float(np.clip(w1 * rng.uniform(0.95, 1.02), 75, 99)), 1)
     w4 = round(float(np.clip(w2 * rng.uniform(0.93, 1.01), 70, 99)), 1)
+    w8 = round(float(np.clip(w4 * rng.uniform(0.91, 0.99), 65, 99)), 1)
+    w12 = round(float(np.clip(w8 * rng.uniform(0.90, 0.98), 60, 99)), 1)
     oee_avg = round(float(np.clip(rng.normal(85, 5), 60, 98)), 1)
     uptime_data.append({
-        "month": m,
-        "week1_uptime": w1,
-        "week2_uptime": w2,
-        "week4_uptime": w4,
+        "cohort_month": m,   # month → cohort_month
+        "week1": w1,         # week1_uptime → week1
+        "week2": w2,         # week2_uptime → week2
+        "week4": w4,         # week4_uptime → week4
+        "week8": w8,         # 신규 추가
+        "week12": w12,       # 신규 추가
         "avg_oee": oee_avg,
     })
 uptime_df = pd.DataFrame(uptime_data)
@@ -881,26 +897,62 @@ print(f"  - 설비-부품 매핑: {len(equipment_parts_df)}건")
 
 
 # --------------------------------------------------------------------------
-# 2.17 설비 리소스 데이터 (에너지/소모품)
+# 2.17 설비 성과 데이터 (equipment_performance.csv) - 에너지/소모품 + KPI
 # --------------------------------------------------------------------------
-print("\n[2.17] 설비 리소스 데이터 생성")
+print("\n[2.17] 설비 성과 데이터 생성 (에너지/소모품 + KPI)")
 
 GRADE_ENERGY_QUOTA = {"A": 500, "B": 400, "C": 300, "D": 200}  # 월간 에너지 할당 (kWh)
+# 등급별 KPI 기준: 좋은 등급일수록 높은 성과
+GRADE_KPI_BASE = {
+    "A": {"avail": 0.94, "oee": 0.88, "yield": 0.96, "reliability": 90},
+    "B": {"avail": 0.88, "oee": 0.78, "yield": 0.92, "reliability": 75},
+    "C": {"avail": 0.80, "oee": 0.68, "yield": 0.87, "reliability": 62},
+    "D": {"avail": 0.73, "oee": 0.58, "yield": 0.83, "reliability": 52},
+}
+
 equipment_resources_data = []
 for _, eq in equipment_df.iterrows():
     quota = GRADE_ENERGY_QUOTA.get(eq["grade"], 300)
     used = round(float(np.clip(rng.uniform(0.3, 1.0) * quota, 10, quota * 0.95)), 2)
+
+    kpi_base = GRADE_KPI_BASE.get(eq["grade"], GRADE_KPI_BASE["B"])
+    availability_rate = round(float(np.clip(
+        rng.normal(kpi_base["avail"], 0.04), 0.70, 0.99
+    )), 4)
+    oee_rate = round(float(np.clip(
+        rng.normal(kpi_base["oee"], 0.06), 0.50, 0.95
+    )), 4)
+    yield_rate = round(float(np.clip(
+        rng.normal(kpi_base["yield"], 0.03), 0.80, 0.99
+    )), 4)
+    reliability_score = round(float(np.clip(
+        rng.normal(kpi_base["reliability"], 8), 50, 100
+    )), 1)
+    # MTBF: 가동시간 / (고장횟수 + 1), MTTR: 2~48h
+    op_hours = eq["operating_hours"]
+    fault_cnt = max(1, int(rng.integers(0, max(1, op_hours // 2000))))
+    mtbf_hours = round(float(op_hours / fault_cnt), 1)
+    mttr_hours = round(float(np.clip(rng.exponential(8), 2, 48)), 1)
+
     equipment_resources_data.append({
         "equipment_id": eq["equipment_id"],
+        # 에너지/소모품 (기존 컬럼 유지)
         "energy_quota_kwh": quota,
         "energy_used_kwh": used,
         "coolant_liters": round(float(rng.uniform(5, 200)), 1),
         "lubricant_liters": round(float(rng.uniform(1, 50)), 1),
         "spare_parts_cost": int(rng.integers(0, 5000000)),
+        # 설비 성과 KPI (신규 추가)
+        "availability_rate": availability_rate,
+        "oee_rate": oee_rate,
+        "yield_rate": yield_rate,
+        "reliability_score": reliability_score,
+        "mtbf_hours": mtbf_hours,
+        "mttr_hours": mttr_hours,
     })
 
 equipment_resources_df = pd.DataFrame(equipment_resources_data)
-print(f"  - 설비 리소스: {len(equipment_resources_df)}건")
+print(f"  - 설비 성과: {len(equipment_resources_df)}건")
 
 print("\n" + "=" * 70)
 print("PART 2 완료: 모든 데이터 생성 완료")
@@ -1335,187 +1387,8 @@ if MLFLOW_AVAILABLE:
         mlflow.sklearn.log_model(model_rul, "model", registered_model_name="설비잔여수명RUL")
 
 
-# --------------------------------------------------------------------------
-# 3.8 작업자 피드백 감성 분석 (TF-IDF + LogisticRegression)
-# --------------------------------------------------------------------------
-print("\n[3.8] 작업자 피드백 감성 분석 모델 (TF-IDF + LogisticRegression)")
-
-feedback_texts = []
-feedback_labels = []
-for tpl in FEEDBACK_TEMPLATES_POSITIVE:
-    for _ in range(30):
-        noise = rng.choice(
-            ["", " 감사합니다!", " 좋아요!", " 계속 유지해주세요!", " 만족합니다!"],
-            p=[0.3, 0.2, 0.2, 0.15, 0.15],
-        )
-        feedback_texts.append(tpl + noise)
-        feedback_labels.append("positive")
-
-for tpl in FEEDBACK_TEMPLATES_NEGATIVE:
-    for _ in range(30):
-        noise = rng.choice(
-            ["", " 개선해주세요.", " 문제입니다.", " 조치 바랍니다.", ""],
-            p=[0.3, 0.2, 0.2, 0.15, 0.15],
-        )
-        feedback_texts.append(tpl + noise)
-        feedback_labels.append("negative")
-
-for tpl in FEEDBACK_TEMPLATES_NEUTRAL:
-    for _ in range(30):
-        noise = rng.choice(
-            ["", " 보통입니다.", " 정상입니다.", ""],
-            p=[0.3, 0.25, 0.25, 0.2],
-        )
-        feedback_texts.append(tpl + noise)
-        feedback_labels.append("neutral")
-
-tfidf_feedback = TfidfVectorizer(max_features=1000, ngram_range=(1, 2))
-X_feedback = tfidf_feedback.fit_transform(feedback_texts)
-le_feedback = LabelEncoder()
-y_feedback = le_feedback.fit_transform(feedback_labels)
-
-X_tr_fb, X_te_fb, y_tr_fb, y_te_fb = train_test_split(
-    X_feedback, y_feedback, test_size=0.2, random_state=42, stratify=y_feedback,
-)
-
-model_feedback = LogisticRegression(
-    max_iter=1000, random_state=42, class_weight="balanced",
-)
-model_feedback.fit(X_tr_fb, y_tr_fb)
-
-y_pred_fb = model_feedback.predict(X_te_fb)
-acc_fb = accuracy_score(y_te_fb, y_pred_fb)
-f1_fb = f1_score(y_te_fb, y_pred_fb, average="macro")
-print(f"  정확도: {acc_fb:.4f}, F1(매크로): {f1_fb:.4f}")
-
-if MLFLOW_AVAILABLE:
-    with mlflow.start_run(run_name="operator_feedback_model"):
-        mlflow.set_tag("model_type", "text_classification")
-        mlflow.log_metrics({"accuracy": acc_fb, "f1_macro": f1_fb})
-        mlflow.sklearn.log_model(
-            model_feedback, "model", registered_model_name="작업자피드백분석",
-        )
-
-
-# --------------------------------------------------------------------------
-# 3.9 생산량 예측 (XGBoost / GradientBoosting Ensemble)
-# --------------------------------------------------------------------------
-print("\n[3.9] 생산량 예측 모델 (XGBoost / GradientBoosting)")
-
-forecast_data = []
-for _ in range(2000):
-    w1 = int(rng.poisson(200))
-    w2 = int(rng.poisson(max(1, w1 + rng.integers(-30, 30))))
-    w3 = int(rng.poisson(max(1, w2 + rng.integers(-30, 30))))
-    w4 = int(rng.poisson(max(1, w3 + rng.integers(-30, 30))))
-    eq_type_enc = int(rng.integers(0, len(EQUIPMENT_TYPES)))
-    oee = round(float(rng.uniform(60, 98)), 1)
-    cycle_time = round(float(rng.uniform(20, 80)), 1)
-    is_overtime = int(rng.random() < 0.2)
-
-    trend = (w4 - w1) / max(1, w1)
-    base_output = (w1 + w2 + w3 + w4) / 4
-    next_output = int(max(0, base_output * (1 + trend * 0.3 + is_overtime * 0.15) + rng.normal(0, 20)))
-
-    forecast_data.append({
-        "week1_output": w1, "week2_output": w2,
-        "week3_output": w3, "week4_output": w4,
-        "equipment_type_encoded": eq_type_enc,
-        "oee": oee, "cycle_time": cycle_time,
-        "is_overtime": is_overtime,
-        "next_week_output": next_output,
-    })
-
-forecast_df = pd.DataFrame(forecast_data)
-X_forecast = forecast_df.drop(columns=["next_week_output"]).copy()
-y_forecast = forecast_df["next_week_output"].copy()
-
-X_tr_fc, X_te_fc, y_tr_fc, y_te_fc = train_test_split(
-    X_forecast, y_forecast, test_size=0.2, random_state=42,
-)
-
-if XGBOOST_AVAILABLE:
-    model_forecast = xgb.XGBRegressor(
-        n_estimators=200, max_depth=5, learning_rate=0.05,
-        random_state=42, verbosity=0,
-    )
-    algo_name_fc = "XGBoost"
-else:
-    model_forecast = GradientBoostingRegressor(
-        n_estimators=200, max_depth=5, learning_rate=0.05, random_state=42,
-    )
-    algo_name_fc = "GradientBoosting"
-
-model_forecast.fit(X_tr_fc, y_tr_fc)
-y_pred_fc = model_forecast.predict(X_te_fc)
-mae_fc = mean_absolute_error(y_te_fc, y_pred_fc)
-r2_fc = r2_score(y_te_fc, y_pred_fc)
-print(f"  알고리즘: {algo_name_fc}")
-print(f"  MAE: {mae_fc:.2f}, R2: {r2_fc:.4f}")
-
-if MLFLOW_AVAILABLE:
-    with mlflow.start_run(run_name="production_forecast_model"):
-        mlflow.set_tag("model_type", "regression")
-        mlflow.set_tag("algorithm", algo_name_fc)
-        mlflow.log_metrics({"mae": mae_fc, "r2": r2_fc})
-        mlflow.sklearn.log_model(
-            model_forecast, "model", registered_model_name="생산량예측",
-        )
-
-
-# --------------------------------------------------------------------------
-# 3.10 공정 이상 감지 (DBSCAN)
-# --------------------------------------------------------------------------
-print("\n[3.10] 공정 이상 감지 모델 (DBSCAN)")
-
-# 설비당 3건 고정 (데모용 - 총 ~900건)
-total_n = len(equipment_df) * 3
-eq_ids_repeat = np.repeat(equipment_df["equipment_id"].values, 3)
-
-normal_process_df = pd.DataFrame({
-    "equipment_id": eq_ids_repeat,
-    "temperature": np.round(rng.normal(50, 8, size=total_n), 1),
-    "pressure": np.round(rng.normal(5, 1.2, size=total_n), 2),
-    "vibration": np.round(rng.normal(2.5, 0.8, size=total_n), 2),
-    "cycle_time": np.round(rng.normal(45, 8, size=total_n), 1),
-    "defect_rate": np.round(rng.beta(2, 50, size=total_n), 4),
-})
-
-# 이상 공정 데이터 50건 고정
-anomaly_process_df = pd.DataFrame({
-    "equipment_id": rng.choice(equipment_df["equipment_id"].values, size=50),
-    "temperature": np.round(rng.uniform(90, 130, size=50), 1),
-    "pressure": np.round(rng.uniform(10, 18, size=50), 2),
-    "vibration": np.round(rng.uniform(8, 15, size=50), 2),
-    "cycle_time": np.round(rng.uniform(80, 150, size=50), 1),
-    "defect_rate": np.round(rng.uniform(0.1, 0.5, size=50), 4),
-})
-process_df = pd.concat([normal_process_df, anomaly_process_df], ignore_index=True)
-process_features = ["temperature", "pressure", "vibration", "cycle_time", "defect_rate"]
-X_process = process_df[process_features].copy()
-scaler_process = StandardScaler()
-X_process_scaled = scaler_process.fit_transform(X_process)
-
-dbscan = DBSCAN(eps=1.5, min_samples=5)
-process_labels = dbscan.fit_predict(X_process_scaled)
-
-n_noise = int((process_labels == -1).sum())
-n_clusters_db = len(set(process_labels)) - (1 if -1 in process_labels else 0)
-print(f"  클러스터 수: {n_clusters_db}, 이상(noise): {n_noise}건 ({n_noise/len(process_labels)*100:.1f}%)")
-
-process_df["cluster_label"] = process_labels
-process_df["is_anomaly"] = (process_labels == -1).astype(int)
-
-if MLFLOW_AVAILABLE:
-    with mlflow.start_run(run_name="process_anomaly_model"):
-        mlflow.set_tag("model_type", "anomaly_detection")
-        mlflow.log_param("eps", 1.5)
-        mlflow.log_param("min_samples", 5)
-        mlflow.log_metrics({"n_clusters": n_clusters_db, "n_noise": n_noise})
-        mlflow.sklearn.log_model(dbscan, "model", registered_model_name="공정이상감지")
-
 print("\n" + "=" * 70)
-print("PART 3 완료: 모든 모델 학습 완료 (10개)")
+print("PART 3 완료: 모든 모델 학습 완료 (7개)")
 print("=" * 70)
 
 
@@ -1536,6 +1409,7 @@ equipment_df.to_csv(BACKEND_DIR / "equipment.csv", index=False, encoding=csv_enc
 eq_types_df.to_csv(BACKEND_DIR / "equipment_types.csv", index=False, encoding=csv_enc)
 parts_df.to_csv(BACKEND_DIR / "parts.csv", index=False, encoding=csv_enc)
 sensor_df.to_csv(BACKEND_DIR / "sensor_readings.csv", index=False, encoding=csv_enc)
+maint_services_df.to_csv(BACKEND_DIR / "maintenance_services.csv", index=False, encoding=csv_enc)
 equipment_analytics_df.to_csv(BACKEND_DIR / "equipment_analytics.csv", index=False, encoding=csv_enc)
 production_df.to_csv(BACKEND_DIR / "production.csv", index=False, encoding=csv_enc)
 maintenance_df.to_csv(BACKEND_DIR / "maintenance.csv", index=False, encoding=csv_enc)
@@ -1550,7 +1424,7 @@ platform_docs_df.to_csv(BACKEND_DIR / "platform_docs.csv", index=False, encoding
 glossary_df.to_csv(BACKEND_DIR / "manufacturing_glossary.csv", index=False, encoding=csv_enc)
 equipment_parts_df.to_csv(BACKEND_DIR / "equipment_parts.csv", index=False, encoding=csv_enc)
 equipment_resources_df.to_csv(BACKEND_DIR / "equipment_resources.csv", index=False, encoding=csv_enc)
-print("  18개 CSV 파일 저장 완료")
+print("  19개 CSV 파일 저장 완료")
 
 
 # --------------------------------------------------------------------------
@@ -1607,17 +1481,7 @@ joblib.dump(le_maint_priority, BACKEND_DIR / "le_maint_priority.pkl")
 # 7. 설비 잔여수명 RUL
 joblib.dump(model_rul, BACKEND_DIR / "model_equipment_rul.pkl")
 
-# 8. 작업자 피드백 감성 분석
-joblib.dump(model_feedback, BACKEND_DIR / "model_operator_feedback.pkl")
-joblib.dump(tfidf_feedback, BACKEND_DIR / "tfidf_vectorizer_feedback.pkl")
-
-# 9. 생산량 예측
-joblib.dump(model_forecast, BACKEND_DIR / "model_production_forecast.pkl")
-
-# 10. 공정 이상 감지
-joblib.dump(dbscan, BACKEND_DIR / "model_process_anomaly.pkl")
-
-print("  10개 모델 + 보조 파일 저장 완료")
+print("  7개 모델 + 보조 파일 저장 완료")
 
 
 # --------------------------------------------------------------------------
@@ -1880,6 +1744,54 @@ print("  equipment_analytics.csv 업데이트 완료 (예측 컬럼 추가)")
 
 
 # --------------------------------------------------------------------------
+# 4.3.1 CSV → PKL 변환 (loader.py의 _DATA_FILES 매핑에 맞춰 저장)
+# --------------------------------------------------------------------------
+print("\n[4.3.1] CSV → PKL 변환 저장")
+
+# loader.py data_tasks 딕셔너리 매핑:
+#   EQUIPMENT_DF              → equipment.pkl
+#   EQUIPMENT_TYPES_DF        → equipment_types.pkl
+#   MAINTENANCE_SERVICES_DF   → maintenance_services.pkl
+#   PRODUCTS_DF               → products.pkl  (parts.csv 대응)
+#   PRODUCTION_LINES_DF       → production_lines.pkl  (production.csv 대응)
+#   LINE_ANALYTICS_DF         → line_analytics.pkl  (equipment_analytics.csv 대응)
+#   EQUIPMENT_PERFORMANCE_DF  → equipment_performance.pkl  (equipment_resources.csv 대응)
+#   DAILY_PRODUCTION_DF       → daily_production.pkl  (daily_metrics.csv 대응)
+#   MAINTENANCE_STATS_DF      → maintenance_stats.pkl
+#   WORK_ORDERS_DF            → work_orders.pkl  (maintenance.csv 대응)
+#   DEFECT_DETAILS_DF         → defect_details.pkl  (anomaly_details.csv 대응)
+#   EQUIPMENT_LIFECYCLE_DF    → equipment_lifecycle.pkl  (equipment_uptime.csv 대응)
+#   PRODUCTION_FUNNEL_DF      → production_funnel.pkl
+#   EQUIPMENT_ACTIVITY_DF     → equipment_activity.pkl  (equipment_daily.csv 대응)
+#   OPERATION_LOGS_DF         → operation_logs.pkl
+
+pkl_map = [
+    (equipment_df,          "equipment.pkl"),
+    (eq_types_df,           "equipment_types.pkl"),
+    (maint_services_df,     "maintenance_services.pkl"),
+    (parts_df,              "products.pkl"),
+    (production_df,         "production_lines.pkl"),
+    (equipment_analytics_df,"line_analytics.pkl"),
+    (equipment_resources_df,"equipment_performance.pkl"),
+    (daily_metrics_df,      "daily_production.pkl"),
+    (maint_stats_df,        "maintenance_stats.pkl"),
+    (maintenance_df,        "work_orders.pkl"),
+    (anomaly_detail_df,     "defect_details.pkl"),
+    (uptime_df,             "equipment_lifecycle.pkl"),
+    (production_funnel_df,  "production_funnel.pkl"),
+    (equipment_daily_df,    "equipment_activity.pkl"),
+    (op_logs_df,            "operation_logs.pkl"),
+]
+
+for df_obj, pkl_name in pkl_map:
+    pkl_path = BACKEND_DIR / pkl_name
+    df_obj.to_pickle(pkl_path)
+    print(f"  - {pkl_name} 저장 완료 ({len(df_obj)} rows)")
+
+print(f"  PKL 변환 완료: {len(pkl_map)}개 파일")
+
+
+# --------------------------------------------------------------------------
 # 4.4 예측 함수 테스트
 # --------------------------------------------------------------------------
 print("\n[4.4] 예측 함수 테스트")
@@ -1902,12 +1814,6 @@ X_fault_test = tfidf_fault.transform([test_fault])
 fault_pred = le_fault_type.inverse_transform(rf_fault.predict(X_fault_test))[0]
 print(f"  고장유형 분류: '{test_fault}' -> {fault_pred}")
 
-# 피드백 감성 분석 테스트
-test_feedback = "설비 상태가 좋아서 작업이 순조롭습니다. 가동률도 높아요."
-X_fb_test = tfidf_feedback.transform([test_feedback])
-fb_pred = le_feedback.inverse_transform(model_feedback.predict(X_fb_test))[0]
-print(f"  피드백 감성: '{test_feedback}' -> {fb_pred}")
-
 # 설비 군집화 테스트
 sample_cluster = {
     "operating_hours": 20000, "fault_count": 2, "downtime_hours": 8,
@@ -1928,11 +1834,12 @@ print("=" * 70)
 print(f"\n[요약]")
 print(f"  데이터:")
 print(f"    - 설비: {len(equipment_df)}개, 부품: {len(parts_df)}개")
-print(f"    - 센서: {len(sensor_df)}건, 생산실적: {len(production_df)}건")
-print(f"    - 정비이력: {len(maintenance_df)}건, 운영로그: {len(op_logs_df)}건")
+print(f"    - 센서: {len(sensor_df)}건, 정비서비스: {len(maint_services_df)}건")
+print(f"    - 생산실적: {len(production_df)}건, 정비이력: {len(maintenance_df)}건")
+print(f"    - 운영로그: {len(op_logs_df)}건")
 print(f"    - 일별지표: {len(daily_metrics_df)}일, 설비일별: {len(equipment_daily_df)}건")
-print(f"    - CSV 파일: 18개")
-print(f"  모델 (11개):")
+print(f"    - CSV 파일: 19개, PKL 파일: {len(pkl_map)}개")
+print(f"  모델 (8개):")
 print(f"    1. 설비 고장 예측 (RandomForest + SHAP)")
 print(f"    2. 불량 감지 (Isolation Forest)")
 print(f"    3. 고장 유형 분류 (TF-IDF + RandomForest)")
@@ -1940,10 +1847,7 @@ print(f"    4. 설비 군집화 (K-Means)")
 print(f"    5. 수율 예측 ({algo_name_yield})")
 print(f"    6. 정비 품질 (RandomForest)")
 print(f"    7. 설비 잔여수명 RUL (GradientBoosting)")
-print(f"    8. 작업자 피드백 분석 (TF-IDF + LogisticRegression)")
-print(f"    9. 생산량 예측 ({algo_name_fc})")
-print(f"   10. 공정 이상 감지 (DBSCAN)")
-print(f"   11. 센서 이상 감지 (IsolationForest, {len(rows)}건)")
+print(f"    8. 센서 이상 감지 (IsolationForest, {len(rows)}건)")
 print(f"  SHAP: {'활성화' if SHAP_AVAILABLE else '비활성화'}")
 print(f"  MLflow: {'활성화' if MLFLOW_AVAILABLE else '비활성화'}")
 print(f"\n백엔드 서버 시작: cd backend && python main.py")

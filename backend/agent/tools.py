@@ -499,8 +499,8 @@ def tool_analyze_equipment(line_id: str) -> dict:
             "defect_return_rate": defect_return_rate,
             "defect_return_rate_pct": round(defect_return_rate * 100, 2) if defect_return_rate < 1 else round(defect_return_rate, 2),
             "avg_response_time": safe_float(row.get("avg_response_time")),
-            "days_since_last_login": safe_int(row.get("days_since_last_login")),
-            "days_since_register": safe_int(row.get("days_since_register")),
+            "days_since_last_maintenance": safe_int(row.get("days_since_last_maintenance", 0)),
+            "days_since_install": safe_int(row.get("days_since_register", row.get("days_since_install", 0))),
         },
         "maintenance": {
             "maintenance_cost": safe_int(row.get("maintenance_cost")),
@@ -521,9 +521,9 @@ def tool_analyze_equipment(line_id: str) -> dict:
     df = st.LINE_ANALYTICS_DF
     try:
         total_equipment = len(df)
-        platform_avg_revenue = float(df["total_production_volume"].mean())
+        platform_avg_production = float(df["total_production_volume"].mean())
         platform_avg_orders = float(df["total_work_orders"].mean())
-        platform_avg_refund = float(df["defect_return_rate"].mean())
+        platform_avg_defect = float(df["defect_return_rate"].mean())
 
         platform_avg_cs = float(df["cs_tickets"].mean()) if "cs_tickets" in df.columns else 0
         platform_cs_rate = round(platform_avg_cs / max(platform_avg_orders, 1) * 100, 2)
@@ -531,10 +531,10 @@ def tool_analyze_equipment(line_id: str) -> dict:
         result["comparison"] = {
             "platform_avg": {
                 "total_work_orders": round(platform_avg_orders, 1),
-                "total_production_volume": round(platform_avg_revenue),
+                "total_production_volume": round(platform_avg_production),
                 "avg_yield_rate": round(df["total_production_volume"].sum() / max(df["total_work_orders"].sum(), 1)),
-                "defect_return_rate": round(platform_avg_refund, 4),
-                "defect_return_rate_pct": round(platform_avg_refund * 100, 2) if platform_avg_refund < 1 else round(platform_avg_refund, 2),
+                "defect_return_rate": round(platform_avg_defect, 4),
+                "defect_return_rate_pct": round(platform_avg_defect * 100, 2) if platform_avg_defect < 1 else round(platform_avg_defect, 2),
                 "cs_tickets": round(platform_avg_cs, 1),
                 "cs_ticket_rate_pct": platform_cs_rate,
                 "equipment_count": total_equipment,
@@ -545,13 +545,13 @@ def tool_analyze_equipment(line_id: str) -> dict:
         if plan_tier:
             tier_df = df[df["plan_tier"] == plan_tier]
             if len(tier_df) > 1:
-                tier_avg_refund = float(tier_df["defect_return_rate"].mean())
+                tier_avg_defect = float(tier_df["defect_return_rate"].mean())
                 result["comparison"]["tier_avg"] = {
                     "plan_tier": plan_tier,
                     "equipment_count": len(tier_df),
                     "total_work_orders": round(float(tier_df["total_work_orders"].mean()), 1),
                     "total_production_volume": round(float(tier_df["total_production_volume"].mean())),
-                    "defect_return_rate_pct": round(tier_avg_refund * 100, 2) if tier_avg_refund < 1 else round(tier_avg_refund, 2),
+                    "defect_return_rate_pct": round(tier_avg_defect * 100, 2) if tier_avg_defect < 1 else round(tier_avg_defect, 2),
                 }
 
         # 백분위 순위 (이 설비가 전체 중 상위 몇%인지)
@@ -711,7 +711,7 @@ def tool_get_cluster_statistics() -> dict:
                     "cluster": int(cluster),
                     "name": name,
                     "equipment_count": len(cluster_equipment),
-                    "avg_revenue": safe_float(cluster_equipment["total_production_volume"].mean()),
+                    "avg_production": safe_float(cluster_equipment["total_production_volume"].mean()),
                     "avg_orders": safe_float(cluster_equipment["total_work_orders"].mean()),
                     "avg_products": safe_float(cluster_equipment["product_count"].mean()),
                     "avg_defect_return_rate": safe_float(cluster_equipment["defect_return_rate"].mean()),
@@ -743,7 +743,7 @@ def tool_get_cluster_statistics() -> dict:
                     "cluster": int(cluster),
                     "name": name,
                     "equipment_count": len(cluster_equipment),
-                    "avg_revenue": safe_float(cluster_equipment["total_production_volume"].mean()),
+                    "avg_production": safe_float(cluster_equipment["total_production_volume"].mean()),
                     "avg_orders": safe_float(cluster_equipment["total_work_orders"].mean()),
                     "avg_products": safe_float(cluster_equipment["product_count"].mean()),
                     "avg_defect_return_rate": safe_float(cluster_equipment["defect_return_rate"].mean()),
@@ -1166,8 +1166,8 @@ def tool_get_failure_prediction(risk_level: str = None, limit: int = None) -> di
                 'shap_cs_tickets': 'CS 문의 증가',
                 'shap_defect_return_rate': '불량률 증가',
                 'shap_avg_response_time': '응답 시간 지연',
-                'shap_days_since_last_login': '장기 미접속',
-                'shap_days_since_register': '가입 후 경과 일수',
+                'shap_days_since_last_maintenance': '장기 미정비',
+                'shap_days_since_install': '설치 후 경과 일수',
                 'shap_plan_tier_encoded': '플랜 등급',
             }
             shap_importance = {col: df[col].abs().mean() for col in shap_cols}
@@ -1250,31 +1250,31 @@ def tool_get_lifecycle_analysis(lifecycle_period: str = None, month: str = None)
         # 와이드 포맷(week1,week2,week4,...) 컬럼 감지
         week_cols = [c for c in df.columns if c.startswith("week")]
 
-        # 라이프사이클별 리텐션 데이터 구성
+        # 라이프사이클별 가동률 데이터 구성
         lifecycle_cols = ["lifecycle_month"] + week_cols
         lifecycle_cols = [c for c in lifecycle_cols if c in df.columns]
-        retention = {}
+        availability = {}
         for rec in df[lifecycle_cols].to_dict("records"):
             lifecycle_name = safe_str(rec.get("lifecycle_month"))
             weeks = {}
             for wc in week_cols:
                 val = safe_float(rec.get(wc))
                 weeks[wc] = f"{val:.1f}%"
-            retention[lifecycle_name] = {"weeks": weeks}
+            availability[lifecycle_name] = {"weeks": weeks}
 
-        # 전체 평균 리텐션 계산
-        avg_retention = {}
+        # 전체 평균 가동률 계산
+        avg_availability = {}
         for wc in week_cols:
             vals = pd.to_numeric(df[wc], errors="coerce").dropna()
-            avg_retention[wc] = round(vals.mean(), 1) if len(vals) > 0 else 0
+            avg_availability[wc] = round(vals.mean(), 1) if len(vals) > 0 else 0
 
         return {
             "status": "success",
             "analysis_type": "설비 라이프사이클 가동률 분석",
             "_llm_instruction": "⚠️ 이 라이프사이클 분석은 **스마트팩토리 플랫폼 전체** 설비 기준입니다. 특정 설비/라인의 라이프사이클이 아닙니다! 개별 설비 분석과 함께 제시할 때 반드시 '플랫폼 전체 라이프사이클 기준'임을 명시하세요.",
-            "total_lifecycles": len(retention),
-            "retention": retention,
-            "avg_retention": {k: f"{v}%" for k, v in avg_retention.items()},
+            "total_lifecycles": len(availability),
+            "availability": availability,
+            "avg_availability": {k: f"{v}%" for k, v in avg_availability.items()},
         }
     except Exception as e:
         return {"status": "error", "message": str(e)}
@@ -1351,7 +1351,7 @@ def tool_get_production_trend(start_date: str = None, end_date: str = None, days
             return None
 
         gmv_col = _col(recent, 'total_gmv', ['gmv'])
-        shops_col = _col(recent, 'active_shops', ['active_equipment'])
+        active_equipment_col = _col(recent, 'active_shops', ['active_equipment'])
         orders_col = _col(recent, 'total_work_orders')
         signups_col = _col(recent, 'new_signups', ['new_equipment'])
         cs_open_col = _col(recent, 'cs_tickets_open', ['cs_tickets'])
@@ -1365,9 +1365,9 @@ def tool_get_production_trend(start_date: str = None, end_date: str = None, days
         gmv_change = calc_change(gmv_curr, gmv_prev)
 
         # 활성 설비 수
-        shops_curr = int(recent[shops_col].mean()) if shops_col else 0
-        shops_prev = int(previous[shops_col].mean()) if shops_col else 0
-        shops_change = calc_change(shops_curr, shops_prev)
+        active_equipment_curr = int(recent[active_equipment_col].mean()) if active_equipment_col else 0
+        active_equipment_prev = int(previous[active_equipment_col].mean()) if active_equipment_col else 0
+        active_equipment_change = calc_change(active_equipment_curr, active_equipment_prev)
 
         # 총 작업지시수
         orders_curr = int(recent[orders_col].mean()) if orders_col else 0
@@ -1406,8 +1406,8 @@ def tool_get_production_trend(start_date: str = None, end_date: str = None, days
 
         # 상관관계 계산
         correlations = []
-        if len(df) >= 7 and shops_col and gmv_col and orders_col:
-            corr_shops_gmv = df[shops_col].corr(df[gmv_col])
+        if len(df) >= 7 and active_equipment_col and gmv_col and orders_col:
+            corr_shops_gmv = df[active_equipment_col].corr(df[gmv_col])
             corr_orders_gmv = df[orders_col].corr(df[gmv_col])
             correlations = [
                 {"var1": "활성 설비", "var2": "총생산량", "correlation": round(corr_shops_gmv, 2),
@@ -1438,7 +1438,7 @@ def tool_get_production_trend(start_date: str = None, end_date: str = None, days
             "| 지표 | 현재 | 이전 | 변화율 |",
             "|------|------|------|--------|",
             f"| 총생산량 | {format_production(gmv_curr)} | {format_production(gmv_prev)} | {format_change(gmv_change)} |",
-            f"| 활성설비 | {shops_curr} | {shops_prev} | {format_change(shops_change)} |",
+            f"| 활성설비 | {active_equipment_curr} | {active_equipment_prev} | {format_change(active_equipment_change)} |",
             f"| 작업지시수 | {orders_curr} | {orders_prev} | {format_change(orders_change)} |",
             f"| 신규등록 | {signups_curr} | {signups_prev} | {format_change(signups_change)} |",
             f"| 평균수리시간 | {repair_curr:.1f}일 | {repair_prev:.1f}일 | {format_change(repair_change)} |",
@@ -1459,7 +1459,7 @@ def tool_get_production_trend(start_date: str = None, end_date: str = None, days
             "_markdown": "\n".join(md_lines),
             "kpis": {
                 "총생산량": {"current": format_production(gmv_curr), "previous": format_production(gmv_prev), "change": format_change(gmv_change)},
-                "활성설비": {"current": shops_curr, "previous": shops_prev, "change": format_change(shops_change)},
+                "활성설비": {"current": active_equipment_curr, "previous": active_equipment_prev, "change": format_change(active_equipment_change)},
                 "작업지시수": {"current": orders_curr, "previous": orders_prev, "change": format_change(orders_change)},
                 "신규등록": {"current": signups_curr, "previous": signups_prev, "change": format_change(signups_change)},
                 "평균수리시간": {"current": f"{repair_curr:.1f}일", "previous": f"{repair_prev:.1f}일", "change": format_change(repair_change)},
@@ -1523,7 +1523,7 @@ def tool_get_oee_prediction(days: int = None, start_date: str = None, end_date: 
 
         # 컬럼명 호환
         gmv_col = 'total_gmv' if 'total_gmv' in recent.columns else 'gmv'
-        shops_col = 'active_shops' if 'active_shops' in recent.columns else 'active_equipment'
+        active_equipment_col2 = 'active_shops' if 'active_shops' in recent.columns else 'active_equipment'
 
         # 월 총생산량 예측 (최근 일평균 * 30)
         daily_avg_gmv = recent[gmv_col].mean() if gmv_col in recent.columns else 0
@@ -1544,7 +1544,7 @@ def tool_get_oee_prediction(days: int = None, start_date: str = None, end_date: 
         total_work_orders = int(recent['total_work_orders'].sum()) if 'total_work_orders' in recent.columns else 0
 
         # 활성 설비
-        avg_active_equipment = int(recent[shops_col].mean()) if shops_col in recent.columns else 0
+        avg_active_equipment = int(recent[active_equipment_col2].mean()) if active_equipment_col2 in recent.columns else 0
 
         # 설비 등급별 생산 분포 (LINE_ANALYTICS_DF 기반)
         tier_distribution = {}
@@ -1555,7 +1555,7 @@ def tool_get_oee_prediction(days: int = None, start_date: str = None, end_date: 
                 if len(tier_equipment) > 0:
                     tier_distribution[tier] = {
                         "equipment_count": len(tier_equipment),
-                        "avg_revenue": safe_int(tier_equipment['total_production_volume'].mean()),
+                        "avg_production": safe_int(tier_equipment['total_production_volume'].mean()),
                         "total_production_volume": safe_int(tier_equipment['total_production_volume'].sum()),
                     }
 
@@ -1604,7 +1604,7 @@ def tool_get_dashboard_summary() -> dict:
     if st.EQUIPMENT_DF is not None:
         equip_df = st.EQUIPMENT_DF
         by_tier = equip_df["plan_tier"].value_counts().to_dict() if "plan_tier" in equip_df.columns else {}
-        summary["shop_stats"] = {
+        summary["equipment_stats"] = {
             "total": len(equip_df),
             "by_tier": by_tier,
             "by_plan_tier": by_tier,
@@ -1720,8 +1720,8 @@ def tool_get_dashboard_summary() -> dict:
     md_sections = ["## 플랫폼 전체 운영 현황 대시보드"]
 
     # 설비 분포
-    if "shop_stats" in summary:
-        ss = summary["shop_stats"]
+    if "equipment_stats" in summary:
+        ss = summary["equipment_stats"]
         md_sections.append(f"\n### 설비 현황\n- 총 설비 수: **{ss['total']}**")
         if ss.get("by_tier"):
             md_sections.append("\n**티어별 분포**\n| 티어 | 수 |\n|------|-------|")
@@ -1807,7 +1807,7 @@ def tool_predict_equipment_failure(line_id: str) -> dict:
     if st.EQUIPMENT_FAILURE_MODEL is None:
         total_work_orders = safe_int(row.get("total_work_orders", 0))
         total_production_volume = safe_int(row.get("total_production_volume", 0))
-        days_since_last = safe_int(row.get("days_since_last_login", 0))
+        days_since_last = safe_int(row.get("days_since_last_maintenance", 0))
         defect_return_rate = safe_float(row.get("defect_return_rate", 0))
         cs_tickets = safe_int(row.get("cs_tickets", 0))
 
@@ -1883,14 +1883,14 @@ def tool_predict_equipment_failure(line_id: str) -> dict:
 
         if not top_factors:
             top_factors = [
-                {"factor": "마지막 접속 후 일수", "importance": 30},
+                {"factor": "마지막 정비 후 일수", "importance": 30},
                 {"factor": "총 생산량", "importance": 25},
                 {"factor": "작업지시 수", "importance": 20},
                 {"factor": "불량률", "importance": 15},
                 {"factor": "플랜 등급", "importance": 10},
             ]
 
-        days_since_last = safe_int(row.get("days_since_last_login", 0))
+        days_since_last = safe_int(row.get("days_since_last_maintenance", 0))
         total_production_volume = safe_int(row.get("total_production_volume", 0))
 
         # 모델 확률 0.0% → 최소 0.5%로 표시 (모델 보정 한계, 과신 방지)
@@ -2025,8 +2025,8 @@ def _get_production_tier(production: int) -> str:
         return "C (하위 생산량)"
     return "D (최하위 생산량)"
 
-# 하위 호환 별칭
-_get_revenue_tier = _get_production_tier
+# 하위 호환 별칭 (구 카페24 네이밍)
+_get_production_tier_alias = _get_production_tier
 
 
 def _analyze_equipment_performance(row, predicted_production: int) -> str:
@@ -2164,18 +2164,18 @@ def tool_optimize_process(
     try:
         # 라인 수율 기반 예산 산정
         if total_budget is None:
-            equipment_revenue = 0
+            equipment_production = 0
             if st.PRODUCTION_LINES_DF is not None:
                 _id_col = "line_id" if "line_id" in st.PRODUCTION_LINES_DF.columns else "line_id"
                 row = st.PRODUCTION_LINES_DF[st.PRODUCTION_LINES_DF[_id_col] == line_id]
                 if not row.empty:
-                    equipment_revenue = float(row.iloc[0].get("total_production_volume", 0))
-            if st.LINE_ANALYTICS_DF is not None and equipment_revenue == 0:
+                    equipment_production = float(row.iloc[0].get("total_production_volume", 0))
+            if st.LINE_ANALYTICS_DF is not None and equipment_production == 0:
                 _id_col2 = "line_id" if "line_id" in st.LINE_ANALYTICS_DF.columns else "line_id"
                 row = st.LINE_ANALYTICS_DF[st.LINE_ANALYTICS_DF[_id_col2] == line_id]
                 if not row.empty:
-                    equipment_revenue = float(row.iloc[0].get("total_production_volume", 0))
-            total_budget = max(500_000, equipment_revenue * 0.1)
+                    equipment_production = float(row.iloc[0].get("total_production_volume", 0))
+            total_budget = max(500_000, equipment_production * 0.1)
 
         if st.PRODUCTION_OPTIMIZER_AVAILABLE:
             from ml.process_optimizer import ProcessOptimizer
@@ -3080,8 +3080,8 @@ MAINTENANCE_AGENT_TOOLS = [
     execute_maintenance_action,   # 정비 자동 조치 실행
 ]
 
-# 하위 호환성 유지
-RETENTION_AGENT_TOOLS = MAINTENANCE_AGENT_TOOLS
+# 하위 호환성 유지 (구 카페24 네이밍)
+MAINTENANCE_AGENT_TOOLS_ALIAS = MAINTENANCE_AGENT_TOOLS
 
 # ============================================================
 # 모든 도구 리스트 (LLM에 바인딩할 때 사용)

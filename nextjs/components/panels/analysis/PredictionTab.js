@@ -30,8 +30,8 @@ export default function PredictionTab({
 }) {
   const [predictionTab, setPredictionTab] = useState('failure');
   const [predictionSearchQuery, setPredictionSearchQuery] = useState('');
-  const [predictionUser, setPredictionUser] = useState(null);
-  const [predictionUserLoading, setPredictionUserLoading] = useState(false);
+  const [predictionEquipment, setPredictionEquipment] = useState(null);
+  const [predictionEquipmentLoading, setPredictionEquipmentLoading] = useState(false);
   const [capData, setCapData] = useState(null);
   const [capLoading, setCapLoading] = useState(false);
 
@@ -53,10 +53,10 @@ export default function PredictionTab({
       .finally(() => setCapLoading(false));
   }, [apiCall, auth, pieceSpc]);
 
-  const handlePredictionSearch = useCallback(async (userId) => {
-    const id = (userId || predictionSearchQuery).trim();
+  const handlePredictionSearch = useCallback(async (equipmentId) => {
+    const id = (equipmentId || predictionSearchQuery).trim();
     if (!id) { toast.error('생산라인 ID를 입력하세요'); return; }
-    setPredictionUserLoading(true);
+    setPredictionEquipmentLoading(true);
     const days = DAYS_MAP[dateRange] || 7;
     try {
       const res = await apiCall({
@@ -64,24 +64,24 @@ export default function PredictionTab({
         auth,
         timeoutMs: 10000,
       });
-      if (res?.status === 'success' && res.user) {
-        setPredictionUser({
-          id: res.user.id,
-          segment: res.user.segment,
-          plan_tier: res.user.plan_tier || res.user.grade,
-          monthly_yield: res.user.monthly_yield || 0,
-          model_predictions: res.user.model_predictions || {},
+      if (res?.status === 'success' && res.equipment) {
+        setPredictionEquipment({
+          id: res.equipment.id,
+          segment: res.equipment.segment,
+          plan_tier: res.equipment.plan_tier || res.equipment.grade,
+          monthly_yield: res.equipment.monthly_yield || 0,
+          model_predictions: res.equipment.model_predictions || {},
         });
-        toast.success(`${res.user.id} 예측 결과를 불러왔습니다`);
+        toast.success(`${res.equipment.id} 예측 결과를 불러왔습니다`);
       } else {
         toast.error('생산라인을 찾을 수 없습니다');
-        setPredictionUser(null);
+        setPredictionEquipment(null);
       }
     } catch (e) {
       toast.error('생산라인 검색에 실패했습니다');
-      setPredictionUser(null);
+      setPredictionEquipment(null);
     }
-    setPredictionUserLoading(false);
+    setPredictionEquipmentLoading(false);
   }, [apiCall, auth, dateRange, predictionSearchQuery]);
 
   return (
@@ -96,7 +96,7 @@ export default function PredictionTab({
           value={predictionSearchQuery}
           onChange={setPredictionSearchQuery}
           onSearch={handlePredictionSearch}
-          loading={predictionUserLoading}
+          loading={predictionEquipmentLoading}
           buttonLabel="예측"
           loadingLabel="조회중..."
         />
@@ -165,40 +165,40 @@ export default function PredictionTab({
       </div>
 
       {/* 개별 설비 예측 결과 */}
-      {predictionUser?.model_predictions && (
+      {predictionEquipment?.model_predictions && (
         <div className="rounded-3xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Brain size={18} className="text-sf-orange" />
-              <span className="text-sm font-black text-sf-brown">{predictionUser.id} ML 예측 결과</span>
+              <span className="text-sm font-black text-sf-brown">{predictionEquipment.id} ML 예측 결과</span>
               <span className="px-2 py-0.5 rounded-full bg-sf-beige text-xs font-semibold text-sf-brown">
-                {predictionUser.segment} · {predictionUser.plan_tier}
+                {predictionEquipment.segment} · {predictionEquipment.plan_tier}
               </span>
             </div>
             <button
-              onClick={() => setPredictionUser(null)}
+              onClick={() => setPredictionEquipment(null)}
               className="text-xs text-sf-brown/50 hover:text-sf-brown transition-all"
             >
               닫기
             </button>
           </div>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {predictionUser.model_predictions.failure && (
+            {predictionEquipment.model_predictions.failure && (
               <div className={`rounded-2xl p-4 border-2 ${
-                predictionUser.model_predictions.failure.risk_code >= 2 ? 'border-red-300 bg-red-50' :
-                predictionUser.model_predictions.failure.risk_code === 1 ? 'border-orange-300 bg-orange-50' :
+                predictionEquipment.model_predictions.failure.risk_code >= 2 ? 'border-red-300 bg-red-50' :
+                predictionEquipment.model_predictions.failure.risk_code === 1 ? 'border-orange-300 bg-orange-50' :
                 'border-green-300 bg-green-50'
               }`}>
                 <div className="text-xs font-bold text-sf-brown mb-1">고장 확률</div>
                 <div className="text-2xl font-black" style={{
-                  color: predictionUser.model_predictions.failure.risk_code >= 2 ? '#DC2626' :
-                         predictionUser.model_predictions.failure.risk_code === 1 ? '#EA580C' : '#16A34A'
-                }}>{predictionUser.model_predictions.failure.probability}%</div>
-                <div className="text-xs text-sf-brown/60">{predictionUser.model_predictions.failure.risk_level}</div>
+                  color: predictionEquipment.model_predictions.failure.risk_code >= 2 ? '#DC2626' :
+                         predictionEquipment.model_predictions.failure.risk_code === 1 ? '#EA580C' : '#16A34A'
+                }}>{predictionEquipment.model_predictions.failure.probability}%</div>
+                <div className="text-xs text-sf-brown/60">{predictionEquipment.model_predictions.failure.risk_level}</div>
               </div>
             )}
-            {predictionUser.model_predictions.yield && (() => {
-              const yieldData = predictionUser.model_predictions.yield;
+            {predictionEquipment.model_predictions.yield && (() => {
+              const yieldData = predictionEquipment.model_predictions.yield;
               return (
               <div className="rounded-2xl p-4 border-2 border-purple-300 bg-purple-50">
                 <div className="text-xs font-bold text-sf-brown mb-1">예상 월생산량</div>
@@ -211,19 +211,19 @@ export default function PredictionTab({
               </div>
               );
             })()}
-            {predictionUser.model_predictions.defect && (
+            {predictionEquipment.model_predictions.defect && (
               <div className={`rounded-2xl p-4 border-2 ${
-                predictionUser.model_predictions.defect.is_anomaly ? 'border-red-300 bg-red-50' : 'border-green-300 bg-green-50'
+                predictionEquipment.model_predictions.defect.is_anomaly ? 'border-red-300 bg-red-50' : 'border-green-300 bg-green-50'
               }`}>
                 <div className="text-xs font-bold text-sf-brown mb-1">이상 패턴</div>
                 <div className="text-2xl font-black" style={{
-                  color: predictionUser.model_predictions.defect.is_anomaly ? '#DC2626' : '#16A34A'
-                }}>{predictionUser.model_predictions.defect.risk_level}</div>
-                <div className="text-xs text-sf-brown/60">점수 {(predictionUser.model_predictions.defect.anomaly_score * 100).toFixed(1)}%</div>
+                  color: predictionEquipment.model_predictions.defect.is_anomaly ? '#DC2626' : '#16A34A'
+                }}>{predictionEquipment.model_predictions.defect.risk_level}</div>
+                <div className="text-xs text-sf-brown/60">점수 {(predictionEquipment.model_predictions.defect.anomaly_score * 100).toFixed(1)}%</div>
               </div>
             )}
-            {predictionUser.model_predictions.maintenance_quality && (() => {
-              const mqData = predictionUser.model_predictions.maintenance_quality;
+            {predictionEquipment.model_predictions.maintenance_quality && (() => {
+              const mqData = predictionEquipment.model_predictions.maintenance_quality;
               return (
               <div className={`rounded-2xl p-4 border-2 ${
                 mqData.score >= 80 ? 'border-green-300 bg-green-50' :
@@ -239,20 +239,20 @@ export default function PredictionTab({
               </div>
               );
             })()}
-            {predictionUser.model_predictions.segment && (
+            {predictionEquipment.model_predictions.segment && (
               <div className="rounded-2xl p-4 border-2 border-blue-300 bg-blue-50">
                 <div className="text-xs font-bold text-sf-brown mb-1">설비등급</div>
-                <div className="text-lg font-black text-blue-600">{predictionUser.model_predictions.segment.segment_name}</div>
-                <div className="text-xs text-sf-brown/60">클러스터 #{predictionUser.model_predictions.segment.cluster}</div>
+                <div className="text-lg font-black text-blue-600">{predictionEquipment.model_predictions.segment.segment_name}</div>
+                <div className="text-xs text-sf-brown/60">클러스터 #{predictionEquipment.model_predictions.segment.cluster}</div>
               </div>
             )}
           </div>
           {/* SHAP 요인 */}
-          {predictionUser.model_predictions.failure?.factors?.length > 0 && (
+          {predictionEquipment.model_predictions.failure?.factors?.length > 0 && (
             <div className="mt-4">
               <div className="text-xs font-bold text-sf-brown mb-2">고장 주요 요인 (SHAP)</div>
               <div className="space-y-2">
-                {predictionUser.model_predictions.failure.factors.map((f, i) => (
+                {predictionEquipment.model_predictions.failure.factors.map((f, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-sf-orange text-white text-xs font-bold flex items-center justify-center shrink-0">
                       {i + 1}
@@ -360,16 +360,18 @@ export default function PredictionTab({
             <div className="rounded-3xl border-2 border-sf-orange/20 bg-white/80 p-5 shadow-sm backdrop-blur">
               <div className="mb-4 text-sm font-black text-sf-brown">고장 고위험 설비</div>
               <div className="space-y-3">
-                {(predictionData.failure?.high_risk_users || []).map((user, idx) => (
+                {(predictionData.failure?.high_risk_equipment || []).map((equipment, idx) => (
                   <div key={idx} className="flex items-center gap-4 p-3 rounded-2xl bg-red-50 border border-red-200">
                     <div className="w-10 h-10 rounded-full bg-red-500 text-white font-bold flex items-center justify-center text-sm">
-                      {user.probability}%
+                      {equipment.probability}%
                     </div>
                     <div className="flex-1">
-                      <div className="font-bold text-sf-brown">{user.id}</div>
-                      <div className="text-xs text-sf-brown/60">{user.segment}</div>
+                      <div className="font-bold text-sf-brown">{equipment.id}</div>
+                      <div className="text-xs text-sf-brown/60">{equipment.segment}</div>
                     </div>
-                    <div className="text-xs text-red-600 font-semibold">{user.last_active}</div>
+                    {equipment.last_maintained && (
+                      <div className="text-xs text-red-600 font-semibold">{equipment.last_maintained}</div>
+                    )}
                   </div>
                 ))}
               </div>

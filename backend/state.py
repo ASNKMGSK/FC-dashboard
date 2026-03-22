@@ -197,28 +197,16 @@ SHAP_EXPLAINER_FAILURE: Optional[Any] = None
 # 고장 예측 모델 설정
 FAILURE_MODEL_CONFIG: Optional[Dict[str, Any]] = None
 
-# ── 신규 4개 모델 ──
+# ── 신규 2개 모델 ──
 # 수율 예측 모델 (LightGBM)
 YIELD_PREDICTION_MODEL: Optional[Any] = None
 
 # 설비 RUL 예측 모델 (GradientBoosting)
 EQUIPMENT_RUL_MODEL: Optional[Any] = None
 
-# 작업자 피드백 분석 모델 (TF-IDF + LogisticRegression)
-OPERATOR_FEEDBACK_MODEL: Optional[Any] = None
-
-# 생산량 예측 모델 (XGBoost)
-PRODUCTION_FORECAST_MODEL: Optional[Any] = None
-
-# 공정 이상 탐지 모델 (DBSCAN)
-PROCESS_ANOMALY_MODEL: Optional[Any] = None
-
 # ── 공용 모델 도구 ──
 # TF-IDF 벡터라이저 (고장 분류용)
 TFIDF_VECTORIZER: Optional[Any] = None
-
-# TF-IDF 벡터라이저 (작업자 피드백 분석용)
-TFIDF_VECTORIZER_SENTIMENT: Optional[Any] = None
 
 # 스케일러 (설비 클러스터용)
 SCALER_CLUSTER: Optional[Any] = None
@@ -239,11 +227,7 @@ _MODEL_FILE_MAP: Dict[str, str] = {
     "SHAP_EXPLAINER_FAILURE": "shap_explainer_failure.pkl",
     "YIELD_PREDICTION_MODEL": "model_yield_prediction.pkl",
     "EQUIPMENT_RUL_MODEL": "model_equipment_rul.pkl",
-    "OPERATOR_FEEDBACK_MODEL": "model_operator_feedback.pkl",
-    "PRODUCTION_FORECAST_MODEL": "model_production_forecast.pkl",
-    "PROCESS_ANOMALY_MODEL": "model_process_anomaly.pkl",
     "TFIDF_VECTORIZER": "tfidf_vectorizer.pkl",
-    "TFIDF_VECTORIZER_SENTIMENT": "tfidf_vectorizer_sentiment.pkl",
     "SCALER_CLUSTER": "scaler_cluster.pkl",
 }
 

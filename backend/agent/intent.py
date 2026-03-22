@@ -37,7 +37,7 @@ PLATFORM_KEYWORDS: frozenset = frozenset([
     "PLC", "SCADA", "MES", "ERP", "IoT",
 ])
 
-SHOP_KEYWORDS: frozenset = frozenset([
+EQUIPMENT_LINE_KEYWORDS: frozenset = frozenset([
     "설비 정보", "설비 서비스", "설비 성과", "설비 생산량",
     "설비 목록", "설비 리스트", "설비 현황", "설비 분포",
     "설비 등급", "설비 타입", "설비 유형",
@@ -75,7 +75,7 @@ DASHBOARD_KEYWORDS: frozenset = frozenset([
     "운영 이벤트", "이벤트 통계", "이벤트 현황", "생산 이벤트", "정비 이벤트",
 ])
 
-RETENTION_KEYWORDS: frozenset = frozenset([
+MAINTENANCE_KEYWORDS: frozenset = frozenset([
     # 분석 키워드("잔존수명", "rul")는 ANALYSIS_KEYWORDS와 중복되어 제거
     # → "라이프사이클 분석" 같은 질문이 MAINTENANCE로 잘못 분류되는 문제 방지
     "고장 위험", "고장 분석", "고장 예방", "고장 예측",

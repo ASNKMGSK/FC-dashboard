@@ -102,7 +102,7 @@ nextjs/
 |------|------|
 | **Basic Auth** | `username:password`를 `btoa()`로 인코딩해 `sessionStorage`에 저장 |
 | **체험용 계정** | 관리자 / 운영자 / 분석가 / 사용자 4개 계정을 클릭 한 번으로 즉시 로그인 |
-| **플로팅 아이콘** | framer-motion 없이 CSS `sf-float` 애니메이션으로 배경 제조 아이콘 연출 |
+| **플로팅 아이콘** | framer-motion 없이 CSS `sf-float` 애니메이션으로 배경 제조 아이콘 연출. 내부 페이지와 통일된 sf-orange/sf-brown/sf-beige 톤 적용 |
 | **서버 운영 안내** | AM 9:00 ~ PM 6:00 KST 운영 시간 표시 |
 
 로그인 성공 시 `{ username, password_b64, user_name, user_role }` 객체를 `sessionStorage`에 저장하고 `/app`으로 이동합니다.
@@ -162,7 +162,7 @@ nextjs/
 | 탭 | 기능 |
 |----|------|
 | **이상탐지** | SPC 관리도, 이상 감지 알림, 생산라인/본 2단계 선택 |
-| **공정능력/예측** | Cp/Cpk 공정능력 지표, ML 예측값 시각화 |
+| **공정능력/예측** | Cp/Cpk 공정능력 지표, ML 예측값 시각화 (7종 모델) |
 | **롤 수명 관리** | 압연 롤 수명 예측, 교체 주기 관리 |
 | **생산 트렌드** | 기간별(7일/30일/90일) 생산량·불량률 추이 |
 | **정비 분석** | 정비 이력, CS 데이터 분석 |
@@ -175,6 +175,10 @@ MLflow 연동 모델 성능 대시보드입니다.
 - PSI(Population Stability Index) 바 차트로 모델 드리프트 모니터링
 - Recharts `LineChart`, `BarChart`로 성능 지표 추이 시각화
 - framer-motion `staggerChildren`으로 카드 순차 등장 애니메이션
+- **하이퍼파라미터 튜닝**: Optuna 기반 자동 탐색. 10개 파라미터 중 체크박스로 대상을 선택하면 자동으로 최적 조합을 탐색
+- **앙상블 가중치 관리**: AutoGluon(WeightedEnsemble) 선택 시 비활성화 (내부 자동 결정)
+- **모델별 버전 관리 UI**: 모델별 그룹 카드 형태로 버전 목록 표시, Production 배포 버전 선택 지원
+- **실험 기록 섹션**: 제거됨 (버전 관리 UI로 통합)
 
 ### 👥 UsersPanel — 사용자 관리 (관리자 전용)
 

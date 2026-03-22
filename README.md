@@ -54,8 +54,10 @@
 - SHAP 기반 AI 의사결정 근거 제공
 
 ### 🧠 AI 모델 / MLOps
-- 10종 ML 모델 관리 (학습·평가·배포)
-- MLflow 실험 추적 및 모델 레지스트리
+- 7종 ML 모델 관리 (학습·평가·배포)
+- 하이퍼파라미터 튜닝: Optuna 기반 자동 탐색 (파라미터 체크박스 선택 방식)
+- AutoGluon 선택 시 앙상블 가중치 관리 비활성화
+- 모델별 버전 관리 UI (모델별 그룹 카드 + Production 배포 선택)
 - 모델별 정확도·F1 점수·MAE·R² 성능 지표 조회
 
 ### 🔧 자동화 엔진
@@ -89,7 +91,7 @@ Next.js 14 (Pages Router)
 FastAPI (Python 3.13)
   ├── api/          # 도메인별 라우터 (8개)
   ├── agent/        # LLM 에이전트 (의도분류 → 도구 실행)
-  ├── ml/           # ML 모델 학습·추론 (10종)
+  ├── ml/           # ML 모델 학습·추론 (7종)
   ├── automation/   # 자동화 엔진 (4종)
   ├── data/         # 데이터 로더 (CSV·PKL)
   └── state.py      # 전역 싱글톤 (DataFrame, 모델, 설정)
@@ -123,7 +125,7 @@ FastAPI (Python 3.13)
 │   │   ├── intent.py           # 키워드 사전 (frozenset 기반)
 │   │   └── tools.py            # @tool 래퍼 + 구현 함수 (dual-layer)
 │   ├── ml/
-│   │   ├── train_models.py      # 10종 ML 모델 학습
+│   │   ├── train_models.py      # 7종 ML 모델 학습
 │   │   ├── yield_model.py
 │   │   └── process_optimizer.py
 │   ├── automation/
@@ -268,7 +270,7 @@ docker push <your-dockerhub-username>/smartfactory-backend:latest
 <!-- TODO: 스크린샷 추가 -->
 
 ### AI 모델/MLOps
-> 10종 ML 모델 성능 지표 및 MLflow 실험 추적
+> 7종 ML 모델 성능 지표 및 버전 관리 (Production 배포 선택)
 
 ![Models](docs/screenshots/models.png)
 <!-- TODO: 스크린샷 추가 -->
@@ -286,7 +288,7 @@ docker push <your-dockerhub-username>/smartfactory-backend:latest
 - Load, Speed 등 다중 지표 동시 표시
 - 스탠드 제어 패널에서 9개 스탠드 병렬 시각화에 활용
 
-### ML 모델 10종
+### ML 모델 7종
 
 | # | 모델명 | 알고리즘 | 용도 |
 |---|--------|---------|------|
@@ -295,13 +297,10 @@ docker push <your-dockerhub-username>/smartfactory-backend:latest
 | 3 | 고장 유형 분류 | TF-IDF + RandomForest | 고장 보고 텍스트 분류 |
 | 4 | 설비 군집화 | K-Means | 유사 설비 그룹핑 |
 | 5 | 수율 예측 | LightGBM / GradientBoosting | 공정 수율 회귀 |
-| 6 | 정비 품질 예측 | RandomForest Classifier | 정비 작업 품질 분류 |
-| 7 | 설비 잔여수명(RUL) | GradientBoosting Regressor | 잔여 수명 회귀 |
-| 8 | 작업자 피드백 분석 | TF-IDF + LogisticRegression | 감성 분류 |
-| 9 | 생산량 예측 | XGBoost / GradientBoosting | 생산 수량 회귀 |
-| 10 | 공정 이상 감지 | DBSCAN | 공정 파라미터 이상 탐지 |
+| 6 | 정비 품질 평가 | RandomForest Classifier | 정비 작업 품질 분류 |
+| 7 | 설비 RUL | GradientBoosting Regressor | 잔여 수명 회귀 |
 
-모든 모델은 MLflow로 실험 추적되며, `model_*.pkl` 형태로 저장됩니다.
+모든 모델은 MLflow로 버전 관리되며, `model_*.pkl` 형태로 저장됩니다. 하이퍼파라미터 튜닝은 Optuna 기반 자동 탐색(파라미터 체크박스 선택)을 지원하며, AutoGluon 선택 시 앙상블 가중치 관리가 비활성화됩니다.
 
 ### 스탠드 시뮬레이터 (StandSimulator)
 - 9개 압연 스탠드의 실시간 물리 시뮬레이션
