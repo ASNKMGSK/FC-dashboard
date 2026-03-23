@@ -263,29 +263,15 @@ docker push aoddudwns17821/fc-dashboard-backend:latest
 
 ## 🖥️ 주요 화면
 
-### 공정 모니터링 대시보드
-> OEE, 생산량, 설비 상태 KPI를 한눈에 확인
-
-![Dashboard](docs/screenshots/dashboard.png)
-<!-- TODO: 스크린샷 추가 -->
-
-### FMCS 스탠드 제어
-> 9개 압연 스탠드 실시간 제어 및 AI 자동제어 현황
-
-![StandControl](docs/screenshots/stand_control.png)
-<!-- TODO: 스크린샷 추가 -->
-
-### 품질/SPC 분석
-> SPC 관리도, 수율 예측, SHAP 기반 AI 근거 제공
-
-![Analysis](docs/screenshots/analysis.png)
-<!-- TODO: 스크린샷 추가 -->
-
-### AI 모델/MLOps
-> 7종 ML 모델 성능 지표 및 버전 관리 (Production 배포 선택)
-
-![Models](docs/screenshots/models.png)
-<!-- TODO: 스크린샷 추가 -->
+| 화면 | 주요 기능 |
+|------|-----------|
+| **공정 모니터링 대시보드** | OEE·생산량·가동률 KPI 집계, 설비별 고장 예측 점수, 생산 트렌드·불량률 추이 차트 |
+| **FMCS 스탠드 제어** | 9개 스탠드 실시간 상태(전류·속도·하중·온도), AI 자동제어 ON/OFF, Roll Gap·HMD 시각화, Canvas 기반 Load/Speed 차트 |
+| **품질/SPC 분석** | X-bar/R 관리도(UCL/LCL), 이상 탐지, 생산 트렌드, 롤 수명 관리, 수율 예측·SHAP 기여도 분석 |
+| **공정능력/예측** | 설비별 고장 확률 예측, SHAP 변수 기여도, 위험 설비 목록 |
+| **AI 모델/MLOps** | 7종 ML 모델 성능 지표, Optuna 하이퍼파라미터 튜닝, AutoGluon 앙상블, 모델별 버전 관리·Production 배포 |
+| **정비 관리** | 작업 지시서 관리, 정비 이력, 예방 정비 스케줄, 부품 재고 현황 |
+| **AI 에이전트** | 자연어 질의 기반 설비 분석, SSE 스트리밍 응답, 도구 호출 시각화 |
 
 ---
 
