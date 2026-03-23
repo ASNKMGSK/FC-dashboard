@@ -36,6 +36,11 @@
 | **Frontend (Vercel)** | https://nextjs-lyart-seven-75.vercel.app |
 | **Backend (Railway)** | https://fc-dashboard-backend-production.up.railway.app |
 
+<p align="center">
+  <img src="portfolio/qr-webapp.png" alt="웹앱 QR" width="120"><br>
+  <sub>웹앱 바로가기</sub>
+</p>
+
 ---
 
 ## ✨ 주요 기능
