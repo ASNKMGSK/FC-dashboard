@@ -1,13 +1,26 @@
-# 최소한만 제외 (보안/불필요한 것만)
+# 보안
+.env
+openai_api_key.txt
+
+# 불필요
 __pycache__/
 *.py[cod]
-.env
-.venv
+.venv/
 venv/
 .git/
 .vscode/
 .idea/
-*.log
-*.csv
 .DS_Store
 Thumbs.db
+nul
+*.log
+logs/
+README.md
+railway.toml
+
+# 데이터 (pkl은 런타임 필요하므로 유지, csv는 제외)
+*.csv
+mlruns/
+ml/mlruns/
+ml/.ipynb_checkpoints/
+guardian.db

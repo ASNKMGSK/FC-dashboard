@@ -29,6 +29,13 @@
 ![Vercel](https://img.shields.io/badge/Vercel-Frontend-000000?style=flat-square&logo=vercel)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker)
 
+### 🔗 배포 주소
+
+| 구분 | URL |
+|------|-----|
+| **Frontend (Vercel)** | https://nextjs-lyart-seven-75.vercel.app |
+| **Backend (Railway)** | https://fc-dashboard-backend-production.up.railway.app |
+
 ---
 
 ## ✨ 주요 기능
@@ -224,8 +231,8 @@ vercel --prod
 
 # 백엔드 Docker 빌드 (Railway)
 cd backend
-docker build -t <your-dockerhub-username>/smartfactory-backend:latest .
-docker push <your-dockerhub-username>/smartfactory-backend:latest
+docker build -t aoddudwns17821/fc-dashboard-backend:latest .
+docker push aoddudwns17821/fc-dashboard-backend:latest
 ```
 
 ---
